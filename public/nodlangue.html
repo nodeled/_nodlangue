@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    const _SITE = {
+      title: 'NØDLANGUE',
+      brandHtml: 'NØDLANGUE',
+      footerBrand: 'NØDLANGUE',
+      footerAuthor: 'Gregoor van der Eyken'
+    };
+    document.title = _SITE.title;
+  </script>
+  <title>NØDLANGUE</title>
+  <link rel="icon" href="/icon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bangers&family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <link id="Google_Material_Icons" rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <style>
+    /* ── CSS vars pour le graphe D3 canvas (POC design-graph-d3) ── */
+    :root {
+      --bg: var(--cn-paper, #F5F2EC);
+      --accent: var(--cn-accent, #D12B2B);
+      --g-edge: rgba(20, 18, 14, 0.52);
+      --g-edge-dot: rgba(20, 18, 14, 0.26);
+      --g-label: #8C867C;
+      --g-label-strong: #3A3732;
+      --g-hub-stroke: #3A3732;
+    }
+
+[data-theme="dark"] {
+      --bg: #0E0E0E;
+      --g-edge: rgba(245, 242, 236, 0.42);
+      --g-edge-dot: rgba(245, 242, 236, 0.18);
+      --g-label: #9c958a;
+      --g-label-strong: #cfc8bc;
+      --g-hub-stroke: #cfc8bc;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--cn-paper, #f6f4ef);
+      color: var(--cn-ink, #1a1814);
+      font-family: "Crimson Pro", Georgia, serif;
+      font-size: 17px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background .25s ease, color .25s ease;
+    }
+
+    body {
+      padding-top: 62px;
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 600px) {
+      .cn-brand {
+        display: none;
+      }
+
+      #cnSidebarBtn {
+        display: none;
+      }
+
+      nl-sidebar {
+        display: none !important;
+      }
+
+      .cn-topbar-inner {
+        padding: 10px 12px;
+        gap: 6px;
+      }
+
+      .cn-topnav {
+        gap: 4px;
+      }
+    }
+
+    /* ── Top bar (fixed, page-level) ── */
+    .cn-topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      background: #0c0b09;
+      color: #f5f2ea;
+      border-bottom: 1px solid rgba(255, 255, 255, .06);
+      box-shadow: 0 1px 0 rgba(0, 0, 0, .4);
+    }
+
+    .cn-topbar-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .cn-brand {
+      font-family: "Bangers", sans-serif;
+      font-weight: 400;
+      font-size: 34px;
+      letter-spacing: .08em;
+      color: #f5f2ea;
+      line-height: 1;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 0 rgba(200, 48, 46, .4);
+    }
+
+    .cn-brand .cn-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #c8302e;
+      margin: 0 6px;
+      vertical-align: 14%;
+    }
+
+    .cn-brand-sub {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10.5px;
+      letter-spacing: .18em;
+      color: #a7a194;
+      margin-left: 14px;
+      padding-left: 14px;
+      border-left: 1px solid rgba(255, 255, 255, .18);
+      text-transform: uppercase;
+    }
+
+    .cn-topnav {
+      display: flex;
+      gap: 6px;
+      margin-left: auto;
+      align-items: center;
+    }
+
+    .cn-topnav .cn-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, .14);
+      color: #e8e3d6;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .08em;
+      padding: 7px 12px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+
+    .cn-topnav .cn-btn:hover {
+      background: rgba(255, 255, 255, .08);
+      border-color: rgba(255, 255, 255, .3);
+    }
+
+    .cn-icon-btn {
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, .14);
+      color: #e8e3d6;
+      border-radius: 50%;
+      cursor: pointer;
+      padding: 0;
+      transition: background .15s;
+    }
+
+    .cn-icon-btn:hover {
+      background: rgba(255, 255, 255, .08);
+    }
+
+    .cn-icon-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ── Feed area ── */
+    .cn-cards-layout {
+      overflow-x: hidden;
+    }
+
+    #cnFeedArea {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    #cnGraph {
+      display: none;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .cn-icon-btn.cn-active {
+      background: rgba(255, 255, 255, .15);
+      border-color: rgba(255, 255, 255, .4);
+    }
+
+    /* ── Graph mode : pleine largeur, pas de sidebar ── */
+    body.graph-mode {
+      overflow: hidden;
+    }
+
+    body.graph-mode .cn-cards-layout {
+      display: block;
+      padding: 0;
+      gap: 0;
+    }
+
+    body.graph-mode nl-sidebar {
+      display: none !important;
+    }
+
+    body.graph-mode #myCards {
+      display: none;
+    }
+
+    body.graph-mode #cnGraph {
+      display: block;
+    }
+
+    /* ── Sidebar masquée (toggle icône) ── */
+    body.sidebar-hidden nl-sidebar {
+      display: none !important;
+    }
+
+    body.sidebar-hidden .cn-cards-layout {
+      grid-template-columns: 1fr;
+    }
+
+    /* ── Search panel (dropdown depuis topbar) ── */
+    .cn-search-panel {
+      position: fixed;
+      top: 62px;
+      left: 0;
+      right: 0;
+      z-index: 25;
+      background: var(--cn-paper, #f6f4ef);
+      border-bottom: 1px solid var(--cn-rule-soft, rgba(26, 24, 20, .14));
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .18);
+      padding: 16px 28px 20px;
+      transform: translateY(-110%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform .25s cubic-bezier(.4, 0, .2, 1), opacity .2s ease;
+    }
+
+    .cn-search-panel.is-open {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .cn-search-panel nl-searchbar {
+      background: var(--cn-card-bg, #fffefb);
+      border: 1px solid var(--cn-rule-soft, rgba(26, 24, 20, .14));
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(26, 24, 20, .05);
+      --nsb-ink: var(--cn-ink, #1a1814);
+      --nsb-ink3: var(--cn-ink-3, #8a8478);
+      --nsb-bg: var(--cn-card-bg, #fffefb);
+      --nsb-paper2: var(--cn-paper-2, #efece4);
+      --nsb-rule: var(--cn-rule-soft, rgba(26, 24, 20, .14));
+      --nsb-accent: var(--cn-accent, #c8302e);
+    }
+
+    /* ── Document mode : pleine largeur, scrollbar au bord écran ── */
+    body.doc-mode {
+      overflow: hidden;
+    }
+
+    /* ── Story panel (nl-split graph + flow) ── */
+    #cnStoryPanel {
+      position: fixed;
+      inset: 62px 0 0 0;
+      z-index: 24;
+      background: var(--cn-paper, #f6f4ef);
+      display: none;
+      flex-direction: column;
+    }
+
+    #cnStoryPanel.is-open {
+      display: flex;
+    }
+
+    #cnStoryBar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--cn-rule-soft, rgba(26, 24, 20, .14));
+      background: var(--cn-paper, #f6f4ef);
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    #cnStoryClose {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--cn-ink, #1a1814);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #cnStoryClose:hover {
+      background: rgba(0, 0, 0, .06);
+    }
+
+    #cnStoryTitle {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--cn-ink-2, #4a463d);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #cnStorySplit {
+      flex: 1;
+      min-height: 0;
+    }
+
+    #cnStoryLeftSplit {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #cnStoryGraphArea {
+      position: relative;
+    }
+
+    #cnStoryGraphArea nl-graph {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    #cnStoryTilesArea {
+      overflow-y: auto;
+      border-top: 1px solid var(--cn-rule-soft, rgba(26, 24, 20, .14));
+    }
+
+    #cnStoryTilesArea nl-statements {
+      display: block;
+      height: 100%;
+    }
+
+    #cnStoryFlowArea {
+      overflow-y: auto;
+      padding: 0 20px 40px;
+    }
+
+    #cnStoryFlowArea nl-flow {
+      display: block;
+      --nl-font-text: "Crimson Pro", Georgia, serif;
+      --nl-font-text-family: "Crimson Pro", Georgia, serif;
+      font-family: "Crimson Pro", Georgia, serif;
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    /* ── Narrative view (rendered inside nl-flow#cnStoryFlow) ── */
+    .cn-nb {
+      margin-bottom: 16px;
+    }
+
+    .cn-nb-intro p,
+    .cn-nb-transition p {
+      margin: 0;
+      color: var(--cn-ink, #1a1814);
+    }
+
+    .cn-nb-transition p {
+      color: var(--cn-ink-2, #4a463d);
+      font-style: italic;
+    }
+
+    /* Citations narrative — classes identiques à nl-flow pour StyleManager.updateTextNodes() */
+    .cn-nb-citation {
+      margin: 0 0 16px;
+    }
+
+    /* Mention : identique à nl-flow .mention */
+    .cn-nb-citation .mention {
+      cursor: pointer;
+      font-weight: 700;
+      text-decoration: underline;
+      text-decoration-thickness: 1.5px;
+      text-decoration-skip-ink: none;
+      text-underline-offset: 3px;
+      padding: 0 2px;
+    }
+
+    /* Prédicat : toujours coloré pour le repérer */
+    .cn-nb-citation .predicate {
+      font-weight: 600;
+      font-style: normal;
+      color: var(--cn-accent, #c8302e);
+      cursor: pointer;
+    }
+
+    /* Highlights via StyleManager.updateTextNodes() — mêmes gradients que nl-flow */
+    .cn-nb-citation .mention.selectedNode {
+      background: linear-gradient(transparent 55%, rgba(0, 229, 255, .45) 55% 92%, transparent 92%);
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+    }
+
+    .cn-nb-citation .mention.linkedNode {
+      background: linear-gradient(transparent 55%, rgba(102, 255, 0, .45) 55% 92%, transparent 92%);
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+    }
+
+    .cn-nb-citation .selectedPredicate {
+      background: linear-gradient(transparent 55%, rgba(255, 153, 204, .45) 55% 92%, transparent 92%);
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+      padding: 0 2px;
+    }
+
+    .cn-nb-citation .selectedQuotation {
+      background: linear-gradient(transparent 55%, rgba(255, 255, 0, .45) 55% 92%, transparent 92%);
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+      padding: 0 2px;
+    }
+
+    .cn-nb-citation .cn-nb-source {
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(0, 0, 0, 0.07);
+      font-size: 0.78em;
+      color: var(--cn-ink-3, #9a9590);
+      line-height: 1.3;
+      text-align: right;
+      font-style: italic;
+    }
+
+    .cn-nb-citation .cn-nb-source a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .cn-nb-citation .cn-nb-source a:hover {
+      text-decoration: underline;
+    }
+
+    .cn-nb-citation .cn-nb-ellipsis {
+      font-style: italic;
+      color: var(--cn-ink-3, #9a9590);
+      padding: 2px 0;
+      font-size: 0.9em;
+    }
+
+    .cn-nb-tweet {
+      display: flex;
+      justify-content: center;
+    }
+
+    .cn-nb-empty {
+      padding: 40px 0;
+      text-align: center;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--cn-ink-3, #8a8478);
+    }
+
+    .cn-nb-empty a {
+      color: inherit;
+    }
+
+    #cnDocPanel {
+      position: fixed;
+      inset: 62px 0 0 0;
+      z-index: 24;
+      background: var(--cn-paper, #f6f4ef);
+      display: block;
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+      overflow-y: hidden;
+    }
+
+    #cnDocPanel.is-open {
+      transform: translateY(0);
+      overflow-y: auto;
+    }
+
+    #cnDocBar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--cn-rule-soft, rgba(26, 24, 20, .14));
+      background: var(--cn-paper, #f6f4ef);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    #cnDocClose {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--cn-ink, #1a1814);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #cnDocClose:hover {
+      background: rgba(0, 0, 0, .06);
+    }
+
+    #cnDocTitle {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--cn-ink-2, #4a463d);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #cnDocBody {
+      padding: 0 20px 40px;
+    }
+
+    #cnDocBody nl-flow {
+      display: block;
+      --nl-font-text: "Crimson Pro", Georgia, serif;
+      --nl-font-text-family: "Crimson Pro", Georgia, serif;
+      font-family: "Crimson Pro", Georgia, serif;
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    /* ── Folder panel ── */
+    #cnFolderPanel {
+      position: fixed;
+      inset: 62px 0 0 0;
+      z-index: 24;
+      background: var(--cn-paper, #f6f4ef);
+      display: block;
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #cnFolderPanel.is-open {
+      transform: translateY(0);
+    }
+
+    #cnFolderBar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--cn-rule-soft, rgba(26, 24, 20, .14));
+      background: var(--cn-paper, #f6f4ef);
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    #cnFolderClose {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--cn-ink, #1a1814);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    #cnFolderClose:hover {
+      background: rgba(0, 0, 0, .06);
+    }
+
+    .cn-folder-breadcrumb-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--cn-ink-3, #8a8478);
+      overflow: hidden;
+    }
+
+    .cn-folder-breadcrumb-bar .cn-bc-root {
+      color: var(--cn-ink-3, #8a8478);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .cn-folder-breadcrumb-bar .cn-bc-root:hover {
+      color: var(--cn-ink, #1a1814);
+    }
+
+    .cn-folder-breadcrumb-bar .cn-bc-sep {
+      opacity: .4;
+    }
+
+    .cn-folder-breadcrumb-bar .cn-bc-current {
+      color: var(--cn-ink, #1a1814);
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #cnFolderBody {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    /* Liste des dossiers */
+    .cn-folder-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .cn-folder-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: var(--cn-card-bg, #fffefb);
+      border: 1px solid var(--cn-rule-soft, rgba(26, 24, 20, .14));
+      border-radius: 6px;
+      cursor: pointer;
+      transition: box-shadow .15s, border-color .15s;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .cn-folder-item:hover {
+      border-color: var(--cn-ink-2, #4a463d);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    }
+
+    .cn-folder-item svg {
+      flex-shrink: 0;
+      color: var(--cn-ink-2, #4a463d);
+    }
+
+    .cn-folder-item-name {
+      flex: 1;
+      font-size: 13px;
+      letter-spacing: .04em;
+      color: var(--cn-ink, #1a1814);
+    }
+
+    .cn-folder-item-count {
+      font-size: 10px;
+      color: var(--cn-ink-3, #8a8478);
+      letter-spacing: .04em;
+    }
+
+    .cn-folder-empty {
+      text-align: center;
+      padding: 60px 20px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--cn-ink-3, #8a8478);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    /* Grille de statements dans un dossier */
+    .cn-folder-cards-grid .cn-folder-breadcrumb {
+      display: none;
+    }
+
+    .cn-folder-cards-grid {
+      columns: 300px;
+      column-gap: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .cn-folder-cards-grid nl-statement-card {
+      break-inside: avoid;
+    }
+
+    /* Highlight de la phrase ciblée à l'ouverture */
+    .cn-doc-highlight {
+      background: rgba(200, 48, 46, .12) !important;
+      border-radius: 3px;
+      transition: background 1.5s ease;
+    }
+
+    /* Icône document dans footer card */
+    .cn-opendoc .material-icons {
+      font-size: 13px !important;
+    }
+
+    /* Hover mention/predicate dans le panel document : garder Crimson Pro */
+    #cnDocBody nl-flow .mention:hover,
+    #cnDocBody nl-flow .predicate:hover,
+    #cnDocBody nl-flow .mark:hover {
+      font-family: "Crimson Pro", Georgia, serif !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── Top bar ── -->
+  <header class="cn-topbar">
+    <div class="cn-topbar-inner">
+      <div class="cn-brand" id="cnBrand"></div>
+      <script>document.getElementById('cnBrand').innerHTML = _SITE.brandHtml;</script>
+      <nav class="cn-topnav">
+        <button id="cnGraphBtn" class="cn-icon-btn" title="Graphe">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="2.5" r="1.5" />
+            <circle cx="2" cy="13" r="1.5" />
+            <circle cx="14" cy="13" r="1.5" />
+            <line x1="8" y1="4" x2="2.8" y2="11.5" />
+            <line x1="8" y1="4" x2="13.2" y2="11.5" />
+            <line x1="3.5" y1="13" x2="12.5" y2="13" />
+          </svg>
+        </button>
+        <button id="cnPageBtn" class="cn-icon-btn" title="Mode statements">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="1.5" y="1.5" width="13" height="13" rx="1.5" />
+            <line x1="1.5" y1="5.5" x2="14.5" y2="5.5" />
+            <line x1="8" y1="5.5" x2="8" y2="14.5" />
+          </svg>
+        </button>
+        <button id="cnStoriesBtn" class="cn-icon-btn" title="Stories">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="3.5" width="9" height="11" rx="1" />
+            <path d="M5 3.5V2h8.5v10.5H12" />
+          </svg>
+        </button>
+        <button id="cnFoldersBtn" class="cn-icon-btn" title="Mes dossiers">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M1.5 6V13H14V4H7L5.5 6H1.5z" />
+          </svg>
+        </button>
+        <button id="cnDocBtn" class="cn-icon-btn" title="Mode document">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M4 1.5h5.5L12.5 4.5V14.5H4V1.5z" />
+            <path d="M9.5 1.5V4.5H12.5" />
+            <line x1="6" y1="7" x2="10.5" y2="7" />
+            <line x1="6" y1="9.5" x2="10.5" y2="9.5" />
+            <line x1="6" y1="12" x2="9" y2="12" />
+          </svg>
+        </button>
+        <button id="cnSearchBtn" class="cn-icon-btn" title="Recherche">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="6.5" cy="6.5" r="4" />
+            <line x1="9.5" y1="9.5" x2="14" y2="14" />
+          </svg>
+        </button>
+        <button id="cnSidebarBtn" class="cn-icon-btn" title="Entités">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="1.5" y="1.5" width="13" height="13" rx="1.5" />
+            <line x1="10" y1="1.5" x2="10" y2="14.5" />
+          </svg>
+        </button>
+        <button id="cnProfileBtn" class="cn-icon-btn" title="Profil / Patreon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="5.5" r="2.5" />
+            <path d="M3 13.5c.6-2.4 2.6-3.5 5-3.5s4.4 1.1 5 3.5" />
+          </svg>
+        </button>
+        <button id="cnThemeBtn" class="cn-icon-btn" title="Thème">
+          <svg id="cnThemeIcon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5z" />
+          </svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Force le téléchargement du binaire Material Icons dès le chargement de la page -->
+  <span class="material-icons" style="visibility:hidden;position:absolute;width:0;height:0;overflow:hidden">book</span>
+
+  <!-- ── Search panel (déclenché par icône loupe) ── -->
+  <div id="cnSearchPanel" class="cn-search-panel">
+    <nl-searchbar id="mySearchbar" placeholder-filter="Filtrer nom, source, relation…"></nl-searchbar>
+  </div>
+
+  <!-- ── Feed + sidebar ── -->
+  <div class="cn-cards-layout">
+    <div id="cnFeedArea">
+      <nl-cards id="myCards" mode="statement" item-width="300"></nl-cards>
+      <nl-graph id="cnGraph" data-source="alledges" legend-attribute="count" style-id="nodeled" layout-mode="dynamic"
+        scroll-to-flow="false" click-node-mode="current" node-spacing="300" panning="true" provider="zc"
+        show-documents="false"></nl-graph>
+    </div>
+    <nl-sidebar id="mySidebar"></nl-sidebar>
+  </div>
+
+  <!-- ── Document panel ── -->
+  <div id="cnDocPanel">
+    <div id="cnDocBar">
+      <button id="cnDocClose">← Retour</button>
+      <span id="cnDocTitle"></span>
+    </div>
+    <div id="cnDocBody">
+      <nl-flow id="cnDocFlow" data-source="currentdocument" render-mode="document" only-important="false"
+        statements-display="after" statements-group="sentence" statements-scope="all" statements-show-source="true"
+        statements-smart-tiles="selected" statements-smart-tiles-scroll="true"
+        statements-smart-tiles-interaction-mode="card"></nl-flow>
+    </div>
+  </div>
+
+  <!-- ── Story panel ── -->
+  <div id="cnStoryPanel">
+    <div id="cnStoryBar">
+      <button id="cnStoryClose">← Retour</button>
+      <span id="cnStoryTitle"></span>
+      <a id="cnStoryNarrativeBtn" href="#" target="_blank"
+        style="margin-left:auto;font-size:11px;font-family:var(--cn-mono,'JetBrains Mono',monospace);color:var(--cn-ink,#1a1814);opacity:.6;text-decoration:none;padding:4px 10px;border:1px solid currentColor;border-radius:3px;display:flex;align-items:center;gap:4px;">✦
+        Narrative</a>
+    </div>
+    <nl-split id="cnStorySplit" direction="horizontal" value="0.38" divider-size="6">
+      <nl-split slot="start" id="cnStoryLeftSplit" direction="vertical" value="0.62">
+        <div slot="start" id="cnStoryGraphArea">
+          <nl-graph id="cnStoryGraph" data-source="stories" style-id="nodeled" provider="zc" scroll-to-flow="false"
+            click-node-mode="selected" panning="true" node-spacing="200" show-documents="false"></nl-graph>
+        </div>
+        <div slot="end" id="cnStoryTilesArea">
+          <nl-statements id="cnStoryStatements" data-source="stories" scope="all" display-tabs="" smart-tiles="selected"
+            smart-tiles-interaction-mode="card" smart-tiles-scroll="false" smart-tiles-show-unlinked="false"
+            tree-list-node-click="never" tree-list-statement-click="never">
+          </nl-statements>
+        </div>
+      </nl-split>
+      <div slot="end" id="cnStoryFlowArea">
+        <nl-flow id="cnStoryFlow" data-source="stories" render-mode="document" only-important="false" text-scope="all"
+          render-tweet="true" statements-display="none" statements-group="story" statements-scope="all"
+          statements-show-source="true" statements-smart-tiles="selected" statements-smart-tiles-scroll="false"
+          statements-smart-tiles-interaction-mode="card" statements-smart-tiles-show-unlinked="false"></nl-flow>
+      </div>
+    </nl-split>
+  </div>
+
+  <!-- ── Folder panel ── -->
+  <div id="cnFolderPanel">
+    <div id="cnFolderBar">
+      <button id="cnFolderClose">← Retour</button>
+      <div class="cn-folder-breadcrumb-bar" id="cnFolderBreadcrumb">
+        <span class="cn-bc-root" id="cnFolderBcRoot">Dossiers</span>
+      </div>
+    </div>
+    <div id="cnFolderBody"></div>
+  </div>
+
+  <!-- ── Scripts ── -->
+  <script>
+    (function () {
+      const hash = new URLSearchParams(location.hash.slice(1));
+      if (hash.get('type') === 'recovery') location.replace('/recovery.html' + location.hash);
+    })();
+  </script>
+  <script>document.write('<script src="' + (location.hostname === 'localhost' ? 'http://localhost:3000/js/tools/nl.js' : 'https://nodlangue.com/dist/nl.min.js') + '"><\/script>')</script>
+  <script>
+    const myCards = document.getElementById('myCards');
+    const cnThemeBtn = document.getElementById('cnThemeBtn');
+    const cnProfileBtn = document.getElementById('cnProfileBtn');
+    const cnGraphBtn = document.getElementById('cnGraphBtn');
+    const cnGraph = document.getElementById('cnGraph');
+    const cnDocBtn = document.getElementById('cnDocBtn');
+    const cnDocPanel = document.getElementById('cnDocPanel');
+    const cnDocFlow = document.getElementById('cnDocFlow');
+    const cnDocClose = document.getElementById('cnDocClose');
+    const cnDocTitle = document.getElementById('cnDocTitle');
+    const cnSearchBtn = document.getElementById('cnSearchBtn');
+    const cnSearchPanel = document.getElementById('cnSearchPanel');
+    const cnSidebarBtn = document.getElementById('cnSidebarBtn');
+    const cnStoriesBtn = document.getElementById('cnStoriesBtn');
+    const cnStoryPanel = document.getElementById('cnStoryPanel');
+    const cnStoryGraph = document.getElementById('cnStoryGraph');
+    const cnStoryFlow = document.getElementById('cnStoryFlow');
+    const cnStoryTitle = document.getElementById('cnStoryTitle');
+    const cnStoryClose = document.getElementById('cnStoryClose');
+    const cnStoryNarrativeBtn = document.getElementById('cnStoryNarrativeBtn');
+    const cnStoryFlowArea = document.getElementById('cnStoryFlowArea');
+    const cnStoryStatements = document.getElementById('cnStoryStatements');
+
+    // ── Search panel toggle ────────────────────────────────────────────────────
+    cnSearchBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = cnSearchPanel.classList.toggle('is-open');
+      cnSearchBtn.classList.toggle('cn-active', open);
+    });
+    document.addEventListener('click', (e) => {
+      if (!cnSearchPanel?.classList.contains('is-open')) return;
+      if (!cnSearchPanel.contains(e.target) && e.target !== cnSearchBtn) {
+        cnSearchPanel.classList.remove('is-open');
+        cnSearchBtn?.classList.remove('cn-active');
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && cnSearchPanel?.classList.contains('is-open')) {
+        cnSearchPanel.classList.remove('is-open');
+        cnSearchBtn?.classList.remove('cn-active');
+      }
+    });
+
+    // ── Sidebar toggle (bloc Entités) ──────────────────────────────────────────
+    cnSidebarBtn?.addEventListener('click', () => {
+      const hidden = document.body.classList.toggle('sidebar-hidden');
+      cnSidebarBtn.classList.toggle('cn-active', hidden);
+    });
+
+    // ── Graph mode ───────────────────────────────────────────────────────────
+    let _graphMode = false;
+
+    function _updateGraph() {
+      if (!cnGraph || !_graphMode) return;
+      const edges = NodelManager.edges || [];
+      if (edges.length) cnGraph.setData?.(NodelManager.nodes || [], edges);
+    }
+
+    const cnPageBtn = document.getElementById('cnPageBtn');
+
+    function _syncModeIcons() {
+      const mode = NodelManager._feedMode || 'statement';
+      cnPageBtn?.classList.toggle('cn-active', mode === 'statement' && !_graphMode);
+      cnStoriesBtn?.classList.toggle('cn-active', mode === 'story' && !_graphMode);
+    }
+
+    function _setFeedMode(mode) {
+      if (_graphMode) _setGraphMode(false);
+      if (_storyMode) _closeStory();
+      _setDocumentMode(false);
+      NodelManager.setFeedMode(mode);
+      _syncModeIcons();
+    }
+
+    function _setGraphMode(on) {
+      if (on && typeof _closeFolderPanel === 'function') _closeFolderPanel();
+      _graphMode = on;
+      document.body.classList.toggle('graph-mode', on);
+      cnGraphBtn?.classList.toggle('cn-active', on);
+      if (!on) _syncModeIcons();
+      else { cnPageBtn?.classList.remove('cn-active'); cnStoriesBtn?.classList.remove('cn-active'); }
+      if (on) {
+        requestAnimationFrame(() => {
+          const graphTop = cnGraph.getBoundingClientRect().top;
+          cnGraph.style.height = Math.max(200, window.innerHeight - graphTop) + 'px';
+          _updateGraph();
+        });
+      } else {
+        if (cnGraph) cnGraph.style.height = '';
+        requestAnimationFrame(() => myCards?._renderFeed?.());
+      }
+    }
+
+    function _closeSearch() {
+      cnSearchPanel?.classList.remove('is-open');
+      cnSearchBtn?.classList.remove('cn-active');
+    }
+
+    cnGraphBtn?.addEventListener('click', () => { _closeSearch(); _setDocumentMode(false); _setGraphMode(true); });
+    cnPageBtn?.addEventListener('click', () => { _closeSearch(); _setFeedMode('statement'); });
+    cnStoriesBtn?.addEventListener('click', () => { _closeSearch(); _setFeedMode('story'); });
+
+    // ── Document mode ─────────────────────────────────────────────────────────
+    let _docMode = false;
+
+    function _setDocumentMode(on, detail) {
+      if (on && typeof _closeFolderPanel === 'function') _closeFolderPanel();
+      _docMode = on;
+      document.body.classList.toggle('doc-mode', on);
+      cnDocPanel?.classList.toggle('is-open', on);
+      cnDocBtn?.classList.toggle('cn-active', on);
+      if (on && detail) {
+        cnDocTitle.textContent = '…';
+        // 1. Charger le contenu dans NodelManager
+        NodelManager.loadNodels([detail.documentId]);
+        // 2. Après chargement : setCurrentDocument → nl-flow réagit via onDocumentEvents
+        const _onLoaded = (action) => {
+          if (action !== 'loadNodels') return;
+          const idx = NodelManager.onNodelEvents.indexOf(_onLoaded);
+          if (idx > -1) NodelManager.onNodelEvents.splice(idx, 1);
+          const doc = (NodelManager.documents || []).find(d => d.id === detail.documentId);
+          cnDocTitle.textContent = doc?.title || doc?.source || detail.docTitle || '';
+          // setCurrentDocument déclenche onDocumentEvents → nl-flow update automatiquement
+          NodelManager.setCurrentDocument(detail.documentId);
+          requestAnimationFrame(() => { cnDocBody.scrollTop = 0; });
+          if (detail.sentenceId) {
+            setTimeout(() => {
+              const el = cnDocFlow.querySelector(`[data-sentenceid="${detail.sentenceId}"]`);
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('cn-doc-highlight');
+                setTimeout(() => el.classList.remove('cn-doc-highlight'), 3000);
+              }
+            }, 900);
+          }
+        };
+        NodelManager.onNodelEvents.push(_onLoaded);
+        setTimeout(() => {
+          const idx = NodelManager.onNodelEvents.indexOf(_onLoaded);
+          if (idx > -1) NodelManager.onNodelEvents.splice(idx, 1);
+        }, 8000);
+      } else if (!on) {
+        cnDocTitle.textContent = '';
+      }
+    }
+
+    cnDocBtn?.addEventListener('click', () => {
+      if (_docMode) _setDocumentMode(false);
+    });
+
+    cnDocClose?.addEventListener('click', () => _setDocumentMode(false));
+
+    // ── Story mode ────────────────────────────────────────────────────────────
+    let _storyMode = false;
+    let _currentStoryId = null;
+
+    function _escapeHtml(s) {
+      return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Algo char-par-char — classes + attributs IDENTIQUES à nl-flow pour que
+    // StyleManager.updateTextNodes() trouve et surligne les spans automatiquement.
+    // predicates = [{exprId, name, stmtId?}, ...] — tous les prédicats de la sentence
+    // mentionData = [{name, nodeId, exprId}, ...] — priorité predicate > mention
+    function _buildHighlightNarrative(text, predicates, mentionData) {
+      if (!text) return '';
+      const n = text.length;
+      const prio = new Array(n).fill(null);
+      const exprIds = new Array(n).fill('');
+      const nodeIds = new Array(n).fill('');
+      const stmtIds = new Array(n).fill('');
+      for (const { name: m, nodeId, exprId } of (mentionData || [])) {
+        if (!m) continue;
+        let pos = 0;
+        while (pos < n) {
+          const mi = text.indexOf(m, pos);
+          if (mi < 0) break;
+          for (let i = mi; i < mi + m.length; i++) {
+            if (prio[i] !== 'predicate') {
+              prio[i] = 'mention';
+              exprIds[i] = exprId || '';
+              nodeIds[i] = nodeId || '';
+            }
+          }
+          pos = mi + 1;
+        }
+      }
+      for (const { exprId: predExprId, name: predName, stmtId } of (predicates || [])) {
+        if (!predName || !predExprId) continue;
+        let pos = 0;
+        while (pos < n) {
+          const pi = text.indexOf(predName, pos);
+          if (pi < 0) break;
+          for (let i = pi; i < pi + predName.length; i++) {
+            prio[i] = 'predicate';
+            exprIds[i] = predExprId;
+            nodeIds[i] = '';
+            stmtIds[i] = stmtId || '';
+          }
+          pos = pi + 1;
+        }
+      }
+      let html = '', i = 0;
+      while (i < n) {
+        const cls = prio[i];
+        if (!cls) {
+          let j = i + 1;
+          while (j < n && !prio[j]) j++;
+          html += _escapeHtml(text.slice(i, j));
+          i = j;
+        } else {
+          const eid = exprIds[i];
+          const nid = nodeIds[i];
+          const sid = stmtIds[i];
+          let j = i + 1;
+          while (j < n && prio[j] === cls && exprIds[j] === eid) j++;
+          let attrs = '';
+          if (eid) attrs += ` data-expressionid="${_escapeHtml(eid)}"`;
+          if (nid) attrs += ` data-nodeids="${_escapeHtml(nid)}"`;
+          if (sid && cls === 'predicate') attrs += ` data-statementid="${_escapeHtml(sid)}"`;
+          html += `<span class="${cls}"${attrs}>${_escapeHtml(text.slice(i, j))}</span>`;
+          i = j;
+        }
+      }
+      return html;
+    }
+
+    function _renderNarrativeHtml(data, storyId) {
+      // exprBySentence et predToStmt construits depuis les tableaux racines (includes story data).
+      const exprBySentence = new Map();
+      for (const expr of (NodelManager.expressions || [])) {
+        if (!expr.sentenceid) continue;
+        if (!exprBySentence.has(expr.sentenceid)) exprBySentence.set(expr.sentenceid, []);
+        exprBySentence.get(expr.sentenceid).push(expr);
+      }
+      const predToStmt = new Map();
+      for (const s of (NodelManager.statements || [])) {
+        if (s.predicateid) predToStmt.set(s.predicateid, s.id);
+      }
+      // Déduplication : une seule occurrence de chaque sentenceid dans le DOM
+      const renderedSentenceIds = new Set();
+
+      let html = '';
+      const paras = data.paragraphs || [];
+      let i = 0;
+      while (i < paras.length) {
+        const para = paras[i];
+        const type = para.type;
+        if (type === 'story_intro') {
+          const text = (para.sentences || []).map(s => _escapeHtml(s.text || '')).join(' ');
+          html += `<div class="cn-nb cn-nb-intro"><p>${text}</p></div>`;
+          i++;
+        } else if (type === 'story_transition') {
+          const text = (para.sentences || []).map(s => _escapeHtml(s.text || '')).join(' ');
+          html += `<div class="cn-nb cn-nb-transition"><p>${text}</p></div>`;
+          i++;
+        } else if (type === 'story_citation') {
+          // Fusionner les blocs du même paragraphe source (même paragraphid), en sautant les transitions intercalées
+          const paraId = para.paragraphid;
+          const group = [para];
+          let j = i + 1;
+          if (paraId) {
+            while (j < paras.length) {
+              const pj = paras[j];
+              if (pj.type === 'story_citation' && pj.paragraphid === paraId) {
+                group.push(pj); j++;
+              } else if (pj.type === 'story_transition') {
+                // Regarder si la prochaine citation non-transition a le même paragraphid
+                const nextCit = paras.slice(j + 1).find(p => p.type !== 'story_transition');
+                if (nextCit?.type === 'story_citation' && nextCit.paragraphid === paraId) {
+                  j++; // ignorer cette transition — sera fusionnée dans le bloc citation
+                } else {
+                  break;
+                }
+              } else {
+                break;
+              }
+            }
+          }
+          i = j;
+
+          // Détecter si le document source est un tweet (doc_url = twitter/x.com status)
+          const primaryDocUrl = group[0].doc_url || '';
+          const isTweetDoc = /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/[^/]+\/status\/\d+/.test(primaryDocUrl);
+          const tweetDocUrl = isTweetDoc
+            ? primaryDocUrl.replace(/^https?:\/\/(www\.)?x\.com\//, 'https://twitter.com/').replace(/^https?:\/\/www\.twitter\.com\//, 'https://twitter.com/')
+            : '';
+
+          // Collecter toutes les sentences du groupe
+          const allSentences = [];
+          for (const p of group) {
+            for (const ss of (p.sentences || [])) {
+              // Pour les docs tweet : ignorer les phrases qui sont uniquement une URL (couvertes par l'embed doc)
+              if (isTweetDoc && /^https?:\/\/(twitter\.com|x\.com)\//.test((ss.source_text || '').trim())) continue;
+              if (ss.source_text || ss.source_type === 'tweet') allSentences.push({ ...ss, _stmtId: p.statementid });
+            }
+          }
+          // Trier par position dans le paragraphe source (sentences.number)
+          allSentences.sort((a, b) => (a.sentence_number ?? 999) - (b.sentence_number ?? 999));
+
+          const primarySid = _escapeHtml(group[0].statementid || '');
+          let inner = '';
+          let tweetsHtml = '';
+          for (let k = 0; k < allSentences.length; k++) {
+            const ss = allSentences[k];
+            // Déduplication : chaque sentenceid apparaît une seule fois dans le DOM
+            if (ss.sentenceid && renderedSentenceIds.has(ss.sentenceid)) continue;
+            if (ss.sentenceid) renderedSentenceIds.add(ss.sentenceid);
+            // Séparateur … si sentences non consécutives dans le paragraphe source
+            if (k > 0) {
+              const pn = allSentences[k - 1].sentence_number ?? null;
+              const cn = ss.sentence_number ?? null;
+              if (pn !== null && cn !== null && cn - pn > 1) {
+                inner += `<div class="cn-nb-ellipsis">…</div>`;
+              }
+            }
+            const rawStmtId = ss._stmtId || group[0].statementid || '';
+            const stmtId = _escapeHtml(rawStmtId);
+            // Expressions de cette sentence depuis le cutup — spans pour TOUS les prédicats
+            const sentExprs = ss.sentenceid ? (exprBySentence.get(ss.sentenceid) || []) : [];
+            const predicates = sentExprs
+              .filter(e => e.type === 'predicate')
+              .map(e => ({ exprId: e.id, name: e.name || '', stmtId: predToStmt.get(e.id) || '' }));
+            const mentions = sentExprs
+              .filter(e => e.type === 'mention')
+              .flatMap(e => (e.nodeids || []).map(nid => ({ name: e.name || '', nodeId: nid, exprId: e.id })));
+            if (ss.source_type === 'tweet') {
+              const tweetUrl = (ss.source_quotation || '').trim().replace(/^https?:\/\/(www\.)?x\.com\//, 'https://twitter.com/');
+              if (tweetUrl) {
+                const href = _escapeHtml(tweetUrl);
+                const theme = (typeof StyleManager !== 'undefined' && StyleManager._isDark?.(StyleManager.COLOR_BACKGROUND)) ? 'dark' : 'light';
+                // Tweet placé en dehors de la citation — nl-flow gère render-tweet
+                tweetsHtml += `<div class="cn-nb cn-nb-tweet" data-statementid="${stmtId}"${ss.sentenceid ? ` data-sentenceid="${_escapeHtml(ss.sentenceid)}"` : ''}><blockquote class="twitter-tweet" data-theme="${theme}" data-conversation="none"><p lang="fr" dir="ltr"></p><a href="${href}"></a></blockquote></div>`;
+              } else {
+                inner += `<div class="sentence cn-stmt-sentence" data-statementid="${stmtId}"${ss.sentenceid ? ` data-sentenceid="${_escapeHtml(ss.sentenceid)}"` : ''}>${_buildHighlightNarrative(ss.source_text, predicates, mentions)}</div>`;
+              }
+            } else {
+              inner += `<div class="sentence cn-stmt-sentence" data-statementid="${stmtId}"${ss.sentenceid ? ` data-sentenceid="${_escapeHtml(ss.sentenceid)}"` : ''}>${_buildHighlightNarrative(ss.source_text, predicates, mentions)}</div>`;
+            }
+          }
+          // isTweetDoc : embed du document source, toujours en dehors de la citation
+          if (isTweetDoc) {
+            const tweetHref = _escapeHtml(tweetDocUrl);
+            const theme = (typeof StyleManager !== 'undefined' && StyleManager._isDark?.(StyleManager.COLOR_BACKGROUND)) ? 'dark' : 'light';
+            tweetsHtml += `<div class="cn-nb cn-nb-tweet" data-statementid="${primarySid}"><blockquote class="twitter-tweet" data-theme="${theme}" data-conversation="none"><p lang="fr" dir="ltr"></p><a href="${tweetHref}"></a></blockquote></div>`;
+          }
+          if ((inner || tweetsHtml) && primarySid) {
+            let src = '';
+            // Pour les docs tweet, la source est le tweet lui-même — pas de lien redondant
+            if (!isTweetDoc && (para.doc_title || para.doc_url)) {
+              const lbl = _escapeHtml(para.doc_title || para.doc_url);
+              src = para.doc_url
+                ? `<div class="cn-nb-source"><a href="${_escapeHtml(para.doc_url)}" target="_blank" rel="noopener noreferrer">${lbl}</a></div>`
+                : `<div class="cn-nb-source">${lbl}</div>`;
+            }
+            if (inner) html += `<div class="cn-nb cn-nb-citation" data-statementid="${primarySid}">${inner}${src}</div>`;
+            html += tweetsHtml;
+          }
+        } else {
+          i++;
+        }
+      }
+      if (!html) html = `<div class="cn-nb-empty">Aucune narrative composée.<br><a href="/story-wizard.html?id=${_currentStoryId}" target="_blank">✦ Composer avec l'IA</a></div>`;
+      return html;
+    }
+
+    // Construit textBlocks sur chaque statement de la story pour nl-statement-card.
+    // Appelé DANS _onNarrativeLoaded (pas avant) — la narrative fournit les sentences triées
+    // par sentence_number pour les blocs multi-sentences : un statement peut avoir son objet
+    // dans la sentence N et son prédicat dans la sentence N+1 (sentenceid différents).
+    // predName posé uniquement sur la sentence dont sentenceid === stmt.sentenceid.
+    // mentions sur TOUS les blocs (sinon le 2e nœud n'est pas souligné dans les blocs croisés).
+    // Fallback sentence unique (stmt.sentenceid) si aucune narrative disponible.
+    // Source de vérité : NodelManager.statements / .expressions / .sentences (tableaux racines).
+    function _prebuildStoryTextBlocks(storyId, narrativeData) {
+      const cover = (NodelManager.stories || []).find(s => s.id === storyId);
+      if (!cover) return;
+
+      // Map statementid → sentences[] triées par sentence_number depuis la narrative
+      const stmtSentsMap = new Map();
+      for (const para of ((narrativeData && narrativeData.paragraphs) || [])) {
+        if (para.statementid && (para.sentences || []).length > 0) {
+          const sorted = [...para.sentences].sort((a, b) =>
+            (a.sentence_number ?? 0) - (b.sentence_number ?? 0));
+          stmtSentsMap.set(para.statementid, sorted);
+        }
+      }
+
+      const storyStmtIds = new Set(cover.statementids || []);
+      const stmts = (NodelManager.statements || []).filter(s => storyStmtIds.has(s.id));
+      for (const stmt of stmts) {
+        const pred = stmt.predicateid ? NodelManager.getExpression(stmt.predicateid) : null;
+        let subjName = '', objName = '';
+        if (pred) {
+          for (const sid of (pred.subjects || [])) {
+            const m = NodelManager.getExpression(sid);
+            if (m?.nodeids?.includes(stmt.sourcenodeid)) { subjName = m.name || ''; break; }
+          }
+          for (const oid of (pred.objects || [])) {
+            const m = NodelManager.getExpression(oid);
+            if (m?.nodeids?.includes(stmt.targetnodeid)) { objName = m.name || ''; break; }
+          }
+        }
+        const allMentions = [subjName, objName].filter(Boolean);
+
+        const narrativeSents = stmtSentsMap.get(stmt.id);
+        if (narrativeSents && narrativeSents.length > 0) {
+          // Blocs multi-sentences : predName uniquement sur la sentence du prédicat
+          stmt.textBlocks = narrativeSents.map(ns => ({
+            text: ns.source_text || '',
+            predName: ns.sentenceid === stmt.sentenceid ? (stmt.name || '') : '',
+            mentions: allMentions
+          }));
+        } else {
+          // Fallback : sentence unique du prédicat
+          const sent = stmt.sentenceid
+            ? NodelManager.sentences.find(s => s.id === stmt.sentenceid)
+            : null;
+          const text = sent?.text || stmt.quotation || stmt.description_fr || '';
+          if (text) stmt.textBlocks = [{ text, predName: stmt.name || '', mentions: allMentions }];
+        }
+      }
+    }
+
+    function _openStory(storyId, storyTitle) {
+      _setDocumentMode(false);
+      _setGraphMode(false);
+      if (typeof _closeFolderPanel === 'function') _closeFolderPanel();
+      _storyMode = true;
+      _currentStoryId = storyId;
+      cnStoryTitle.textContent = storyTitle || '…';
+      if (cnStoryNarrativeBtn) cnStoryNarrativeBtn.href = '/story-wizard.html?id=' + storyId;
+      cnStoryPanel.classList.add('is-open');
+
+      // Layout → cutup → narrative (ordre obligatoire : textBlocks pré-construits avant que
+      // cnStoryStatements ne soit alimenté, sinon nl-statement-card tombe sur le fallback)
+      NodelManager.loadStoryLayout(storyId, () => {
+        if (_currentStoryId !== storyId) return;
+        cnStoryGraph.setAttribute('story-ids', storyId);
+        const cover = (NodelManager.stories || []).find(s => s.id === storyId);
+        if (cover?.name) cnStoryTitle.textContent = cover.name;
+
+        NodelManager.loadStoryCutup(storyId, () => {
+          if (_currentStoryId !== storyId) return;
+
+          const _onNarrativeLoaded = (data) => {
+            if (_currentStoryId !== storyId) return;
+            // textBlocks enrichis avec les sentences de la narrative (multi-sentences si besoin)
+            _prebuildStoryTextBlocks(storyId, data || null);
+            cnStoryStatements.setAttribute('story-ids', storyId);
+
+            const hasNarrative = data && (data.paragraphs || []).length > 0;
+            if (hasNarrative) {
+              cnStoryFlow.setNarrative(_renderNarrativeHtml(data, storyId));
+            } else {
+              cnStoryFlow.clearNarrative();
+              cnStoryFlow.setAttribute('story-ids', storyId);
+            }
+            requestAnimationFrame(() => { cnStoryFlowArea.scrollTop = 0; });
+          };
+
+          if (typeof NodelManager.loadStoryNarrative === 'function') {
+            NodelManager.loadStoryNarrative(storyId, _onNarrativeLoaded);
+          } else {
+            _prebuildStoryTextBlocks(storyId, null);
+            cnStoryStatements.setAttribute('story-ids', storyId);
+            cnStoryFlow.setAttribute('story-ids', storyId);
+            requestAnimationFrame(() => { cnStoryFlowArea.scrollTop = 0; });
+          }
+        });
+      });
+    }
+
+    function _closeStory() {
+      _storyMode = false;
+      cnStoryPanel.classList.remove('is-open');
+      cnStoryTitle.textContent = '';
+      cnStoryGraph.removeAttribute('story-ids');
+      cnStoryFlow.removeAttribute('story-ids');
+      cnStoryFlow.clearNarrative?.();
+      cnStoryStatements.removeAttribute('story-ids');
+      if (_currentStoryId) { NodelManager.unloadStoryData?.(_currentStoryId); _currentStoryId = null; }
+    }
+
+    cnStoryClose?.addEventListener('click', _closeStory);
+
+    document.addEventListener('cn-story-open', (e) => {
+      const { id, name } = e.detail || {};
+      if (id) _openStory(id, name);
+    });
+
+    document.addEventListener('cn-open-document', (e) => {
+      const { documentId, statementId, sentenceId } = e.detail || {};
+      if (!documentId) return;
+      // Récupérer le titre du document depuis la mémoire si disponible
+      const doc = (NodelManager.documents || []).find(d => d.id === documentId);
+      const docTitle = doc?.title || doc?.source || '';
+      _setGraphMode(false);
+      _setDocumentMode(true, { documentId, statementId, sentenceId, docTitle });
+    });
+
+    cnGraph?.addEventListener('nl-graph-document-click', (e) => {
+      const { documentId } = e.detail;
+      if (!documentId) return;
+      _setGraphMode(false);
+      _setDocumentMode(true, { documentId });
+    });
+
+    // nl-graph-link-navigate → géré plus bas via _navigateToNodes (edge modal)
+
+    // ── Folder panel ─────────────────────────────────────────────────────────
+    const cnFoldersBtn = document.getElementById('cnFoldersBtn');
+    const cnFolderPanel = document.getElementById('cnFolderPanel');
+    const cnFolderClose = document.getElementById('cnFolderClose');
+    const cnFolderBody = document.getElementById('cnFolderBody');
+    const cnFolderBcRoot = document.getElementById('cnFolderBcRoot');
+    const cnFolderBreadcrumb = document.getElementById('cnFolderBreadcrumb');
+
+    let _folderMode = false;
+    let _currentFolder = null;
+
+    function _setBreadcrumb(folder) {
+      cnFolderBreadcrumb.innerHTML = '';
+      const root = document.createElement('span');
+      root.className = 'cn-bc-root';
+      root.textContent = 'Dossiers';
+      cnFolderBreadcrumb.appendChild(root);
+      if (folder) {
+        const sep = document.createElement('span');
+        sep.className = 'cn-bc-sep';
+        sep.textContent = '›';
+        const cur = document.createElement('span');
+        cur.className = 'cn-bc-current';
+        cur.textContent = folder.name || 'Dossier';
+        cnFolderBreadcrumb.appendChild(sep);
+        cnFolderBreadcrumb.appendChild(cur);
+        root.addEventListener('click', () => _renderFolderList());
+      }
+    }
+
+    function _renderFolderList() {
+      _currentFolder = null;
+      _setBreadcrumb(null);
+      const folders = (NodelManager.folders || []).filter(f => !f.is_inbox);
+      const inbox = (NodelManager.folders || []).find(f => f.is_inbox);
+      const all = [inbox, ...folders].filter(Boolean);
+
+      if (!all.length) {
+        cnFolderBody.innerHTML = '<div class="cn-folder-empty">Aucun dossier</div>';
+        return;
+      }
+      const list = document.createElement('div');
+      list.className = 'cn-folder-list';
+      all.forEach(f => {
+        const item = document.createElement('div');
+        item.className = 'cn-folder-item';
+        const count = (f.statementids || []).length;
+        item.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="${f.is_inbox ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.5">
+            <path d="M1.5 6V13H14V4H7L5.5 6H1.5z"/>
+          </svg>
+          <span class="cn-folder-item-name">${f.is_inbox ? '📥 Inbox' : (f.name || 'Sans titre')}</span>
+          <span class="cn-folder-item-count">${count} stmt</span>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3l6 5-6 5"/></svg>`;
+        item.addEventListener('click', () => _renderFolderStatements(f));
+        list.appendChild(item);
+      });
+      cnFolderBody.innerHTML = '';
+      cnFolderBody.appendChild(list);
+    }
+
+    function _renderFolderStatements(folder) {
+      _currentFolder = folder;
+      _setBreadcrumb(folder);
+      cnFolderBody.innerHTML = '<div class="cn-folder-empty">Chargement…</div>';
+
+      const ids = folder.statementids || [];
+      if (!ids.length) {
+        cnFolderBody.innerHTML = '<div class="cn-folder-empty">Ce dossier est vide</div>';
+        return;
+      }
+
+      const render = (stmts) => {
+        cnFolderBody.innerHTML = '';
+        const grid = document.createElement('div');
+        grid.className = 'cn-folder-cards-grid';
+        stmts.forEach(stmt => {
+          const card = document.createElement('nl-statement-card');
+          card.item = stmt;
+          grid.appendChild(card);
+        });
+        cnFolderBody.appendChild(grid);
+      };
+
+      // Cherche d'abord dans la mémoire
+      const cached = ids.map(id => NodelManager.getStatement?.(id)).filter(Boolean);
+      if (cached.length === ids.length) { render(cached); return; }
+
+      NodelSb.loadStatementsByIds(ids, (stmts) => {
+        if (stmts) stmts.forEach(s => NodelManager._setToArrayById?.(NodelManager.statements, s));
+        render(stmts || []);
+      });
+    }
+
+    function _openFolderPanel() {
+      _setDocumentMode(false);
+      _setGraphMode(false);
+      if (_storyMode) _closeStory();
+      _folderMode = true;
+      cnFolderPanel.classList.add('is-open');
+      cnFoldersBtn.classList.add('cn-active');
+
+      const doRender = () => _renderFolderList();
+      if (NodelManager.folders?.length || !NodelManager.loadFolders) {
+        doRender();
+      } else {
+        const h = () => {
+          const idx = NodelManager.onFolderEvents.indexOf(h);
+          if (idx > -1) NodelManager.onFolderEvents.splice(idx, 1);
+          doRender();
+        };
+        NodelManager.onFolderEvents.push(h);
+        NodelManager.loadFolders();
+      }
+    }
+
+    function _closeFolderPanel() {
+      _folderMode = false;
+      cnFolderPanel.classList.remove('is-open');
+      cnFoldersBtn.classList.remove('cn-active');
+      _currentFolder = null;
+    }
+
+    cnFoldersBtn?.addEventListener('click', () => {
+      if (_folderMode) { _closeFolderPanel(); return; }
+      _closeSearch();
+      _openFolderPanel();
+    });
+    cnFolderClose?.addEventListener('click', _closeFolderPanel);
+
+    // ── Theme toggle ──────────────────────────────────────────────────────────
+    (function initTheme() {
+      const saved = localStorage.getItem('cn-theme') || 'light';
+      applyTheme(saved);
+    })();
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-cn-theme', theme);
+      localStorage.setItem('cn-theme', theme);
+      const icon = document.getElementById('cnThemeIcon');
+      if (!icon) return;
+      if (theme === 'dark') {
+        icon.innerHTML = '<circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3"/>';
+      } else {
+        icon.innerHTML = '<path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5z"/>';
+      }
+    }
+
+    cnThemeBtn?.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-cn-theme') || 'light';
+      applyTheme(current === 'dark' ? 'light' : 'dark');
+    });
+
+    // ── Profile button → login.html ───────────────────────────────────────────
+    cnProfileBtn?.addEventListener('click', () => {
+      window.location.href = '/login.html';
+    });
+
+    // ── Bootstrap ─────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      const isProd = location.hostname !== 'localhost';
+      Nl.initialize({ environment: isProd ? 'prod' : 'dev', baseUrl: isProd ? 'https://nodlangue.com/' : undefined });
+    });
+
+    // ── NodelManager init ─────────────────────────────────────────────────────
+    document.addEventListener('nl-manager-ready', () => {
+      NodelManager.start({
+        dataEnv: 'dev',
+        showLoginDialog: () => { window.location.href = '/login.html'; },
+      });
+      NodelManager.nodelApiUrl = location.hostname === 'localhost' ? 'http://localhost:4000' : 'https://nodlangue.com';
+      NodelManager.loadFolders();
+      _syncModeIcons();
+
+      StyleManager.setSkin({
+        color_background: '#f6f4ef',
+        color_node: '#1a1814',
+        color_text: '#1a1814',
+        color_nodehovered: '#c8302e',
+        color_mention: '#c8302e',
+        color_nodeselected: '#c8302e',
+        color_title: '#c8302e',
+        color_nodelinked: '#5a5450',
+        color_subtitle: '#5a5450',
+        color_nodefarlinked: '#a09080',
+        color_caption: '#a09080',
+        font_node_family: 'Bangers, sans-serif',
+        font_node_size: '16px',
+        font_node_weight: '400',
+        font_nodehovered_family: 'Bangers, sans-serif',
+        font_nodeselected_family: 'Bangers, sans-serif',
+      });
+
+      NodelManager.onStatementEvents.push((action, statement) => {
+        if (action !== 'setCurrentStatement' || !statement) return;
+        const found = [...document.querySelectorAll('nl-statement-card')]
+          .find(c => c._item?.id === statement.id);
+        if (found) { found._openCommentModal(true); return; }
+        const tmp = document.createElement('nl-statement-card');
+        tmp.style.cssText = 'position:fixed;left:-9999px;visibility:hidden;';
+        document.body.appendChild(tmp);
+        tmp.item = statement;
+        requestAnimationFrame(() => {
+          tmp._openCommentModal(true);
+          document.addEventListener('cn-statement-modal-close', () => tmp.remove(), { once: true });
+        });
+      });
+
+      NodelManager.onNodeEvents.push((action, param) => {
+        if (action === 'setPrimaryNode') {
+          NodelManager.setSelectedNode(param ? param.id : null, false);
+          // Si un secondary est déjà posé, le scope sera fixé par l'appelant (_navigateToNodes)
+          if (NodelManager.getSecondaryNode()) return;
+          const sb = document.getElementById('mySearchbar');
+          if (sb) sb.setAttribute('scope-mode', 'either');
+          NodelManager.setFeedScope('either');
+        }
+      });
+
+      NodelManager.onFeedEvents.push((action) => {
+        if (action === 'setFeedMode') _syncModeIcons();
+        if (_graphMode && (action === 'loadFeedStatements' || action === 'loadFeedStories')) {
+          _updateGraph();
+        }
+      });
+
+      // ── Deep link : déclencher immédiatement, avant le premier chargement ──
+      const _initDeepLinkId = _deepLinkId();
+      if (_initDeepLinkId) {
+        NodelManager._pendingDeepLink = true; // bloque nl-cards._switchTab
+        _openStatementDeepLink(_initDeepLinkId);
+      }
+    });
+
+    // ── URL state : statement/:id ─────────────────────────────────────────────
+    function _deepLinkId() {
+      const m = location.pathname.match(/^\/statement\/([^/]+)$/);
+      if (m) return m[1];
+      const p = new URLSearchParams(location.search);
+      if (p.get('type') === 'statement' && p.get('id')) return p.get('id');
+      return null;
+    }
+
+    let _deepLinkDone = false;
+
+    function _openStatementDeepLink(id) {
+      if (typeof NodelSb === 'undefined') return;
+
+      NodelSb.loadStatementsByIds([id], (stmts) => {
+        if (_deepLinkDone) return;
+        if (!stmts?.length) { NodelManager._pendingDeepLink = false; return; }
+        _deepLinkDone = true;
+        const stmt = stmts[0];
+        const { sourcenodeid, targetnodeid } = stmt;
+        const nodeIds = [sourcenodeid, targetnodeid].filter(Boolean);
+
+        const _activate = () => {
+          const _openModal = () => {
+            const found = [...document.querySelectorAll('nl-statement-card')]
+              .find(c => c._item?.id === id);
+            if (found) { found._openCommentModal(true); return; }
+            // Fallback : card temporaire si le statement n'apparaît pas dans le feed
+            const tmp = document.createElement('nl-statement-card');
+            tmp.style.cssText = 'position:fixed;left:-9999px;visibility:hidden;';
+            document.body.appendChild(tmp);
+            tmp.item = NodelManager.buildStatementItem(stmt) || stmt;
+            requestAnimationFrame(() => {
+              tmp._openCommentModal(true);
+              document.addEventListener('cn-statement-modal-close', () => tmp.remove(), { once: true });
+            });
+          };
+
+          // Écouter loadFeedStatements (pas loadItemsFromNodesSummary)
+          const _handler = (action) => {
+            if (action !== 'loadFeedStatements') return;
+            const idx = NodelManager.onFeedEvents.indexOf(_handler);
+            if (idx > -1) NodelManager.onFeedEvents.splice(idx, 1);
+            setTimeout(_openModal, 100);
+          };
+          NodelManager.onFeedEvents.push(_handler);
+          setTimeout(() => {
+            const idx = NodelManager.onFeedEvents.indexOf(_handler);
+            if (idx > -1) { NodelManager.onFeedEvents.splice(idx, 1); _openModal(); }
+          }, 3000);
+
+          // setPrimaryNode/setSecondaryNode (met à jour la searchbar) — nl-cards
+          // est encore bloqué par _pendingDeepLink, donc pas de requête prématurée
+          if (sourcenodeid) NodelManager.setPrimaryNode(sourcenodeid);
+          if (targetnodeid) NodelManager.setSecondaryNode(targetnodeid);
+
+          // Corriger le bouton scope (auto-scope a pu le passer à 'either')
+          const sb = document.getElementById('mySearchbar');
+          if (sb) { sb._scopeMode = 'both'; sb._renderScopeBtn(); }
+
+          // Débloquer nl-cards et déclencher UNE SEULE requête avec les deux nodes
+          NodelManager._pendingDeepLink = false;
+          NodelManager.setFeedScope('both');
+        };
+
+        if (nodeIds.length) {
+          NodelSb.loadNodesByIds(nodeIds, (nodes) => {
+            if (nodes) nodes.forEach(n => NodelManager.setNode(n));
+            _activate();
+          });
+        } else {
+          _activate();
+        }
+      });
+    }
+
+    // Ouvre modale → push /statement/:id
+    document.addEventListener('cn-statement-modal-open', (e) => {
+      const id = e.detail?.id;
+      if (id) history.pushState({ statementId: id }, '', `/statement/${id}`);
+    });
+
+    // Ferme modale → restaure / + reset currentStatementId pour permettre réouverture
+    document.addEventListener('cn-statement-modal-close', () => {
+      if (history.state?.statementId) history.pushState(null, '', '/');
+      NodelManager._currentStatementId = null;
+    });
+
+    // Bouton retour navigateur
+    window.addEventListener('popstate', (e) => {
+      if (!e.state?.statementId) {
+        const modal = document.getElementById('cn-comment-modal');
+        if (modal?.classList.contains('is-open')) modal.classList.remove('is-open');
+      }
+    });
+
+    // ── Edge modal (clic sur arête ZC ou D3) ────────────────────────────────
+    function _navigateToNodes(fromId, toId) {
+      NodelManager.setSecondaryNode(toId);
+      NodelManager.setPrimaryNode(fromId);
+      const sb = document.getElementById('mySearchbar');
+      if (sb) sb.setAttribute('scope-mode', 'both');
+      NodelManager.setFeedScope('both');
+      _setGraphMode(false);
+    }
+
+    cnGraph?.addEventListener('nl-graph-link-navigate', (e) => {
+      const { fromId, toId } = e.detail;
+      const stmts = (NodelManager.statements || []).filter(s =>
+        (s.sourcenodeid === fromId && s.targetnodeid === toId) ||
+        (s.sourcenodeid === toId && s.targetnodeid === fromId)
+      );
+      if (!stmts.length) return;
+
+      const sb = document.getElementById('mySearchbar');
+      if (sb) sb.setAttribute('scope-mode', 'both');
+      NodelManager.setFeedScope('both');
+
+      if (stmts.length > 1) {
+        _navigateToNodes(fromId, toId);
+        return;
+      }
+
+      const tmp = document.createElement('nl-statement-card');
+      tmp.style.cssText = 'position:fixed;left:-9999px;visibility:hidden;';
+      document.body.appendChild(tmp);
+      tmp.item = NodelManager.buildStatementItem(stmts[0]) || stmts[0];
+      requestAnimationFrame(() => {
+        tmp._openCommentModal(true);
+        document.addEventListener('cn-statement-modal-close', () => tmp.remove(), { once: true });
+      });
+    });
+
+    cnStoryGraph?.addEventListener('nl-graph-link-navigate', (e) => {
+      const { fromId, toId } = e.detail;
+      const stmts = (NodelManager.statements || []).filter(s =>
+        (s.sourcenodeid === fromId && s.targetnodeid === toId) ||
+        (s.sourcenodeid === toId   && s.targetnodeid === fromId)
+      );
+      if (!stmts.length) return;
+      if (stmts.length > 1) {
+        // Sélectionne le node source pour filtrer les smart-tiles dans cnStoryStatements
+        NodelManager.setCurrentNode(fromId);
+        return;
+      }
+      const tmp = document.createElement('nl-statement-card');
+      tmp.style.cssText = 'position:fixed;left:-9999px;visibility:hidden;';
+      document.body.appendChild(tmp);
+      tmp.item = NodelManager.buildStatementItem(stmts[0]) || stmts[0];
+      requestAnimationFrame(() => {
+        tmp._openCommentModal(true);
+        document.addEventListener('cn-statement-modal-close', () => tmp.remove(), { once: true });
+      });
+    });
+
+    document.addEventListener('cn-statement-loupe', (e) => {
+      const { sourcenodeid, targetnodeid } = e.detail;
+      document.getElementById('cn-comment-modal')?.classList.remove('is-open');
+      _navigateToNodes(sourcenodeid, targetnodeid);
+    });
+  </script>
+
+
+</body>
+
+</html>

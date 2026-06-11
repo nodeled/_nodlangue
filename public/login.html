@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Cutup.news — Connexion</title>
+  <link rel="icon" href="/icon.png" type="image/png">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #fdfbf6;
+      --ink: #1a1a1a;
+      --mute: #7a7a7a;
+      --rule: #e6e2d8;
+      --patreon: #f96854;
+      --green: #16a34a;
+      --red: #dc2626;
+      --header-height: 56px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 15px;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--rule);
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: "Bangers", Impact, sans-serif;
+      font-size: 24px;
+      letter-spacing: .06em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .logo em {
+      color: var(--patreon);
+      font-style: normal;
+    }
+
+    main {
+      margin-top: var(--header-height);
+      max-width: 560px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 40px 24px 100px;
+    }
+
+    h1 {
+      font-family: "Bangers", Impact, sans-serif;
+      font-weight: 400;
+      font-size: 32px;
+      letter-spacing: .04em;
+      margin: 0 0 8px;
+    }
+
+    .lead {
+      font-size: 13px;
+      color: var(--mute);
+      margin: 0 0 28px;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: 12px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, .04);
+      padding: 22px 26px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--mute);
+      margin: 0 0 14px;
+    }
+
+    .sb-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: var(--mute);
+    }
+
+    .dot.on {
+      background: var(--green);
+    }
+
+    .user-email {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .user-sub {
+      font-size: 12px;
+      color: var(--mute);
+    }
+
+    .alert {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 14px;
+      line-height: 1.5;
+      transition: opacity .4s;
+    }
+
+    .alert-success {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: var(--green);
+    }
+
+    .alert-error {
+      background: #fff7f7;
+      border: 1px solid #fecaca;
+      color: var(--red);
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <a class="logo" href="/">CUTUP<em>.</em>NEWS</a>
+  </header>
+
+  <main>
+    <h1>Connexion Patreon</h1>
+    <p class="lead">
+      Connecte ton compte Patreon pour accéder aux contenus réservés aux abonnés.
+    </p>
+
+    <div id="alertArea"></div>
+
+    <div class="card">
+      <div class="card-title">Compte</div>
+      <div class="sb-row">
+        <span class="dot" id="sbDot"></span>
+        <span id="sbStatus" class="user-sub">Chargement…</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Patreon</div>
+      <nl-account-patreon id="patreonComp" show-access-check></nl-account-patreon>
+    </div>
+  </main>
+
+  <!-- nl.js — dev localhost:3000, prod nodeled.com/dist -->
+  <script>document.write('<script src="' + (location.hostname === 'localhost' ? 'http://localhost:3000/js/tools/nl.js' : 'https://cutup.news/dist/nl.min.js') + '"><\/script>')</script>
+
+  <script>
+    // ── URL params ───────────────────────────────────────────────────────────────
+    const _params = new URLSearchParams(location.search);
+    if (_params.get('patreon_error')) {
+      showAlert('error', 'Erreur OAuth Patreon : ' + decodeURIComponent(_params.get('patreon_error')));
+      const u = new URL(location.href); u.searchParams.delete('patreon_error');
+      history.replaceState(null, '', u.toString());
+    }
+    if (_params.get('patreon_connected')) {
+      showAlert('success', 'Patreon connecté avec succès.');
+      const u = new URL(location.href); u.searchParams.delete('patreon_connected');
+      history.replaceState(null, '', u.toString());
+    }
+
+    // ── Initialisation nodeled ────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      const isProd = location.hostname !== 'localhost';
+      Nl.initialize({ environment: isProd ? 'prod' : 'dev', baseUrl: isProd ? 'https://cutup.news/' : undefined });
+    });
+
+    document.addEventListener('nl-manager-ready', () => {
+      NodelManager.start({ dataEnv: 'dev' });
+      // L'auth Patreon est sur cutup (port 2000), pas nodel (port 3000)
+      NodelManager.nodelApiUrl = location.hostname === 'localhost' ? 'http://localhost:1000' : 'https://cutup.news';
+
+      renderSbStatus(NodelManager.session);
+      NodelManager.onSessionEvents.push((action, session) => {
+        renderSbStatus(session);
+      });
+    });
+
+    // ── Événements composant ──────────────────────────────────────────────────────
+    document.getElementById('patreonComp').addEventListener('nl-patreon-connected', () => {
+      showAlert('success', 'Patreon connecté avec succès.');
+    });
+    document.getElementById('patreonComp').addEventListener('nl-patreon-disconnected', () => {
+      showAlert('success', 'Connexion Patreon supprimée.');
+    });
+    document.getElementById('patreonComp').addEventListener('nl-patreon-error', e => {
+      showAlert('error', 'Erreur : ' + e.detail?.message);
+    });
+
+    // ── Helpers ───────────────────────────────────────────────────────────────────
+    function renderSbStatus(session) {
+      const dot = document.getElementById('sbDot');
+      const txt = document.getElementById('sbStatus');
+      if (session?.user) {
+        dot.classList.add('on');
+        txt.innerHTML = `<span class="user-email">${session.user.email}</span>`
+          + `<span class="user-sub">&nbsp;· ${session.user.id.slice(0, 8)}…</span>`;
+      } else {
+        dot.classList.remove('on');
+        txt.textContent = 'Non connecté — un compte sera créé automatiquement via Patreon.';
+      }
+    }
+
+    function showAlert(type, msg) {
+      const el = document.getElementById('alertArea');
+      const div = document.createElement('div');
+      div.className = `alert alert-${type}`;
+      div.textContent = msg;
+      el.innerHTML = '';
+      el.appendChild(div);
+      setTimeout(() => { div.style.opacity = '0'; }, 4000);
+    }
+  </script>
+</body>
+
+</html>

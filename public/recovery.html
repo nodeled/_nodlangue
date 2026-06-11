@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Récupération — Cutup.news</title>
+  <link rel="icon" href="/icon.png" type="image/png">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #fdfbf6;
+      --ink: #1a1a1a;
+      --mute: #7a7a7a;
+      --rule: #e6e2d8;
+      --accent: #c8302e;
+      --green: #16a34a;
+      --red: #dc2626;
+      --header-height: 56px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 15px;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--rule);
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: "Bangers", Impact, sans-serif;
+      font-size: 24px;
+      letter-spacing: .06em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .logo em {
+      color: var(--accent);
+      font-style: normal;
+    }
+
+    main {
+      margin-top: var(--header-height);
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 48px 24px 100px;
+    }
+
+    h1 {
+      font-family: "Bangers", Impact, sans-serif;
+      font-weight: 400;
+      font-size: 32px;
+      letter-spacing: .04em;
+      margin: 0 0 8px;
+    }
+
+    .lead {
+      font-size: 13px;
+      color: var(--mute);
+      margin: 0 0 28px;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: 12px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, .04);
+      padding: 22px 26px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--mute);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 6px;
+      margin-top: 14px;
+    }
+
+    label:first-of-type {
+      margin-top: 0;
+    }
+
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fafaf8;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    input:focus {
+      border-color: var(--ink);
+      background: #fff;
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 18px;
+      padding: 11px 20px;
+      background: var(--ink);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: "Bangers", Impact, sans-serif;
+      font-size: 17px;
+      letter-spacing: .06em;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+
+    .btn:hover {
+      opacity: .85;
+    }
+
+    .btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .alert {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .alert-success {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: var(--green);
+    }
+
+    .alert-error {
+      background: #fff7f7;
+      border: 1px solid #fecaca;
+      color: var(--red);
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--mute);
+      margin-top: 18px;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .hint a {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .pwd-wrap {
+      position: relative;
+    }
+
+    .pwd-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--mute);
+      font-size: 13px;
+      padding: 4px;
+    }
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, .3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <a class="logo" href="/">CUTUP<em>.</em>NEWS</a>
+  </header>
+
+  <main>
+
+    <!-- ── Formulaire : nouveau mot de passe ── -->
+    <div id="stepReset" class="step active">
+      <h1>Nouveau mot de passe</h1>
+      <p class="lead">Choisis un mot de passe sécurisé pour ton compte.</p>
+
+      <div class="card">
+        <div id="alertReset"></div>
+        <label for="pwd1">Nouveau mot de passe</label>
+        <div class="pwd-wrap">
+          <input type="password" id="pwd1" placeholder="8 caractères minimum" autocomplete="new-password" />
+          <button class="pwd-toggle" type="button" data-target="pwd1" title="Afficher">👁</button>
+        </div>
+        <label for="pwd2">Confirmer le mot de passe</label>
+        <div class="pwd-wrap">
+          <input type="password" id="pwd2" placeholder="Répète le mot de passe" autocomplete="new-password" />
+          <button class="pwd-toggle" type="button" data-target="pwd2" title="Afficher">👁</button>
+        </div>
+        <button class="btn" id="saveBtn">Enregistrer le mot de passe</button>
+      </div>
+
+      <p class="hint"><a href="/login.html">← Retour à la connexion</a></p>
+    </div>
+
+    <!-- ── Succès ── -->
+    <div id="stepDone" class="step">
+      <h1>C'est fait !</h1>
+      <p class="lead">Ton mot de passe a été mis à jour. Tu vas être redirigé…</p>
+      <div class="card">
+        <div class="alert alert-success">Mot de passe mis à jour avec succès.</div>
+        <button class="btn" onclick="location.href='/login.html'">Aller à la connexion</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Lire le hash IMMÉDIATEMENT avant que nl.js ne le consomme
+    const _hp = Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
+    const _accessToken = _hp.access_token || null;
+    const _refreshToken = _hp.refresh_token || null;
+  </script>
+
+  <!-- nl.js — même pattern que les autres pages -->
+  <script>document.write('<script src="' + (location.hostname === 'localhost' ? 'http://localhost:3000/js/tools/nl.js' : 'https://cutup.news/dist/nl.min.js') + '"><\/script>')</script>
+
+  <script>
+    // ── Initialisation ─────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      const isProd = location.hostname !== 'localhost';
+      Nl.initialize({ environment: isProd ? 'prod' : 'dev' });
+    });
+
+    document.addEventListener('nl-manager-ready', () => {
+      NodelManager.start({ dataEnv: 'dev' });
+      NodelManager.nodelApiUrl = location.hostname === 'localhost' ? 'http://localhost:1000' : 'https://cutup.news';
+    });
+
+    // ── Enregistrement du nouveau mot de passe ─────────────────────────────────
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      const pwd1 = document.getElementById('pwd1').value;
+      const pwd2 = document.getElementById('pwd2').value;
+
+      if (pwd1.length < 8) {
+        showAlert('error', 'Le mot de passe doit faire au moins 8 caractères.');
+        return;
+      }
+      if (pwd1 !== pwd2) {
+        showAlert('error', 'Les mots de passe ne correspondent pas.');
+        return;
+      }
+
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Enregistrement…';
+
+      try {
+        // Établir la session depuis le token de récupération (équivalent v2 de
+        // changePassword dans NodelSb — on set la session avant updateUser)
+        if (_accessToken) {
+          await NodelSb._supabase.auth.setSession({
+            access_token: _accessToken,
+            refresh_token: _refreshToken || '',
+          });
+        }
+
+        const { error } = await NodelSb._supabase.auth.updateUser({ password: pwd1 });
+
+        btn.disabled = false;
+        btn.textContent = 'Enregistrer le mot de passe';
+
+        if (error) {
+          showAlert('error', error.message);
+        } else {
+          showStep('stepDone');
+          setTimeout(() => { location.href = '/login.html'; }, 3000);
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Enregistrer le mot de passe';
+        showAlert('error', e.message || 'Une erreur est survenue.');
+      }
+    });
+
+    // ── Toggle affichage mot de passe ──────────────────────────────────────────
+    document.querySelectorAll('.pwd-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const input = document.getElementById(btn.dataset.target);
+        input.type = input.type === 'password' ? 'text' : 'password';
+      });
+    });
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    function showStep(id) {
+      document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function showAlert(type, msg) {
+      const el = document.getElementById('alertReset');
+      el.innerHTML = `<div class="alert alert-${type}">${_esc(msg)}</div>`;
+    }
+
+    function _esc(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+  </script>
+</body>
+
+</html>
