@@ -1,804 +1,1184 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Story Wizard</title>
-<link rel="icon" href="/icon.png" type="image/png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link id="Google_Material_Icons" rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-<style>
-:root {
-  --bg: #f8f7f4;
-  --surface: #ffffff;
-  --border: #e0ddd8;
-  --text: #1a1814;
-  --muted: #6b6560;
-  --accent: #c84010;
-  --blue: #1a50a0;
-  --green: #1a6030;
-  --orange: #b06010;
-  --mono: 'DM Mono', 'Courier New', monospace;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: Georgia, serif; background: var(--bg); color: var(--text); line-height: 1.6; font-size: 15px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Story Wizard</title>
+  <link rel="icon" href="/icon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link id="Google_Material_Icons" rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <style>
+    :root {
+      --bg: #f8f7f4;
+      --surface: #ffffff;
+      --border: #e0ddd8;
+      --text: #1a1814;
+      --muted: #6b6560;
+      --accent: #c84010;
+      --blue: #1a50a0;
+      --green: #1a6030;
+      --orange: #b06010;
+      --mono: 'DM Mono', 'Courier New', monospace;
+    }
 
-/* ── Layout ── */
-#sw-header {
-  position: fixed; top: 0; left: 0; right: 0; height: 50px;
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 12px; padding: 0 20px; z-index: 100;
-}
-#sw-back { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 13px; font-family: var(--mono); padding: 4px 8px; border-radius: 3px; }
-#sw-back:hover { background: var(--border); }
-#sw-title { font-size: 15px; font-weight: bold; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#sw-resolved-badge {
-  display: inline-flex; align-items: center; gap: 4px; font-size: 11px;
-  font-family: var(--mono); padding: 2px 8px; border-radius: 3px;
-}
-#sw-resolved-badge.resolved   { background: #d0f0d8; color: #1a6030; }
-#sw-resolved-badge.unresolved { background: #fde8e0; color: #8a2010; }
-#sw-resolved-badge.hidden { display: none; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-#sw-tabs { position: fixed; top: 50px; left: 0; right: 0; height: 40px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; z-index: 99; }
-.sw-tab { padding: 0 20px; height: 40px; line-height: 40px; font-size: 13px; font-family: var(--mono); cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); }
-.sw-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    body {
+      font-family: Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 15px;
+    }
 
-#sw-body { margin-top: 90px; max-width: 800px; margin-left: auto; margin-right: auto; padding: 20px 20px 80px; }
+    /* ── Layout ── */
+    #sw-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px;
+      z-index: 100;
+    }
 
-/* ── Sections ── */
-.sw-section { display: none; }
-.sw-section.active { display: block; }
+    #sw-back {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 13px;
+      font-family: var(--mono);
+      padding: 4px 8px;
+      border-radius: 3px;
+    }
 
-/* ── Statements section ── */
-#sw-stmt-search-wrap { display: flex; gap: 8px; margin-bottom: 16px; }
-#sw-stmt-search { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: var(--surface); }
-#sw-stmt-search-btn { padding: 8px 14px; background: var(--blue); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-family: var(--mono); }
-#sw-stmt-results { margin-bottom: 16px; }
+    #sw-back:hover {
+      background: var(--border);
+    }
 
-.sw-stmt-row {
-  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 4px;
-  font-size: 12px;
-}
-.sw-stmt-row.in-story { border-color: #80c090; background: #f0fff4; }
-.sw-stmt-row-desc { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sw-stmt-row-nodes { font-family: var(--mono); font-size: 10px; color: var(--muted); white-space: nowrap; }
-.sw-stmt-toggle { padding: 3px 8px; border: 1px solid; border-radius: 3px; cursor: pointer; font-size: 11px; font-family: var(--mono); background: none; }
-.sw-stmt-toggle.add    { color: var(--blue); border-color: var(--blue); }
-.sw-stmt-toggle.remove { color: var(--accent); border-color: var(--accent); }
+    #sw-title {
+      font-size: 15px;
+      font-weight: bold;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-#sw-story-stmts { margin-top: 20px; }
-.sw-section-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
+    #sw-resolved-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-family: var(--mono);
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
 
-/* ── Compose bar ── */
-#sw-compose-bar {
-  position: fixed; bottom: 0; left: 0; right: 0; padding: 12px 20px;
-  background: var(--surface); border-top: 1px solid var(--border);
-  display: flex; gap: 8px; justify-content: flex-end; z-index: 100;
-}
-.sw-btn { padding: 7px 16px; border-radius: 4px; font-size: 12px; font-family: var(--mono); cursor: pointer; border: 1px solid; }
-.sw-btn-primary  { background: var(--accent); color: white; border-color: var(--accent); }
-.sw-btn-ai       { background: #1a2a40; color: #6090d0; border-color: #2a4060; }
-.sw-btn-ghost    { background: none; color: var(--muted); border-color: var(--border); }
-.sw-btn:disabled { opacity: .4; cursor: not-allowed; }
+    #sw-resolved-badge.resolved {
+      background: #d0f0d8;
+      color: #1a6030;
+    }
 
-/* ── Narrative blocks ── */
-.sw-block { border-radius: 4px; margin-bottom: 8px; overflow: hidden; border: 1px solid; }
-.sw-block-header { display: flex; align-items: center; gap: 8px; padding: 7px 12px; font-size: 11px; font-family: var(--mono); cursor: grab; user-select: none; }
-.sw-block-header:active { cursor: grabbing; }
-.sw-block-body { padding: 10px 14px; font-size: 13px; line-height: 1.7; }
-.sw-block-tag { flex: 1; font-size: 10px; text-transform: uppercase; letter-spacing: .1em; }
-.sw-block-stmt-info { font-size: 10px; color: var(--muted); }
-.sw-edit-btn { padding: 2px 7px; border-radius: 2px; font-size: 10px; cursor: pointer; background: none; border: 1px solid currentColor; font-family: var(--mono); }
+    #sw-resolved-badge.unresolved {
+      background: #fde8e0;
+      color: #8a2010;
+    }
 
-.sw-block.intro     { border-color: #6080b0; }
-.sw-block.intro     .sw-block-header { background: #eef2f8; color: #3060a0; }
-.sw-block.intro     .sw-block-body   { background: #f8faff; }
-.sw-block.citation  { border-color: #b0a890; }
-.sw-block.citation  .sw-block-header { background: #f4f2ee; color: #605040; }
-.sw-block.citation  .sw-block-body   { background: #faf9f7; font-style: italic; }
-.sw-block.transition { border-color: #c09050; }
-.sw-block.transition .sw-block-header { background: #fdf4e8; color: #906030; }
-.sw-block.transition .sw-block-body   { background: #fffbf4; }
+    #sw-resolved-badge.hidden {
+      display: none;
+    }
 
-.sw-block.drag-over { opacity: .5; }
+    #sw-tabs {
+      position: fixed;
+      top: 50px;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      z-index: 99;
+    }
 
-/* Édition inline */
-.sw-edit-area { display: none; margin-top: 8px; }
-.sw-edit-area.visible { display: block; }
-.sw-edit-ta {
-  width: 100%; min-height: 60px; padding: 8px 10px; font-size: 13px; line-height: 1.7;
-  font-family: Georgia, serif; border: 1px solid var(--accent); border-radius: 3px;
-  resize: vertical; background: var(--surface);
-}
-.sw-edit-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; }
+    .sw-tab {
+      padding: 0 20px;
+      height: 40px;
+      line-height: 40px;
+      font-size: 13px;
+      font-family: var(--mono);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+    }
 
-/* Status + loading */
-#sw-status { position: fixed; top: 90px; left: 0; right: 0; text-align: center; padding: 6px; font-size: 12px; font-family: var(--mono); z-index: 98; display: none; }
-#sw-status.info    { background: #eef2f8; color: #3060a0; display: block; }
-#sw-status.success { background: #d0f0d8; color: #1a6030; display: block; }
-#sw-status.error   { background: #fde8e0; color: #8a2010; display: block; }
+    .sw-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
 
-#sw-loading { display: none; position: fixed; inset: 0; background: rgba(248,247,244,.7); z-index: 200; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
-#sw-loading.visible { display: flex; }
-.sw-spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+    #sw-body {
+      margin-top: 90px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 20px 20px 80px;
+    }
 
-#sw-login-wall { display: none; position: fixed; inset: 0; background: var(--surface); z-index: 300; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
-#sw-login-wall.visible { display: flex; }
-#sw-login-wall a { color: var(--blue); font-size: 14px; }
+    /* ── Sections ── */
+    .sw-section {
+      display: none;
+    }
 
-#sw-init-overlay { display: flex; position: fixed; inset: 0; background: var(--bg); z-index: 250; align-items: center; justify-content: center; }
-</style>
+    .sw-section.active {
+      display: block;
+    }
+
+    /* ── Statements section ── */
+    #sw-stmt-search-wrap {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    #sw-stmt-search {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 13px;
+      background: var(--surface);
+    }
+
+    #sw-stmt-search-btn {
+      padding: 8px 14px;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+
+    #sw-stmt-results {
+      margin-bottom: 16px;
+    }
+
+    .sw-stmt-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+
+    .sw-stmt-row.in-story {
+      border-color: #80c090;
+      background: #f0fff4;
+    }
+
+    .sw-stmt-row-desc {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sw-stmt-row-nodes {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .sw-stmt-toggle {
+      padding: 3px 8px;
+      border: 1px solid;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+      font-family: var(--mono);
+      background: none;
+    }
+
+    .sw-stmt-toggle.add {
+      color: var(--blue);
+      border-color: var(--blue);
+    }
+
+    .sw-stmt-toggle.remove {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    #sw-story-stmts {
+      margin-top: 20px;
+    }
+
+    .sw-section-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    /* ── Compose bar ── */
+    #sw-compose-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 20px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      z-index: 100;
+    }
+
+    .sw-btn {
+      padding: 7px 16px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: var(--mono);
+      cursor: pointer;
+      border: 1px solid;
+    }
+
+    .sw-btn-primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .sw-btn-ai {
+      background: #1a2a40;
+      color: #6090d0;
+      border-color: #2a4060;
+    }
+
+    .sw-btn-ghost {
+      background: none;
+      color: var(--muted);
+      border-color: var(--border);
+    }
+
+    .sw-btn:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    /* ── Narrative blocks ── */
+    .sw-block {
+      border-radius: 4px;
+      margin-bottom: 8px;
+      overflow: hidden;
+      border: 1px solid;
+    }
+
+    .sw-block-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      font-size: 11px;
+      font-family: var(--mono);
+      cursor: grab;
+      user-select: none;
+    }
+
+    .sw-block-header:active {
+      cursor: grabbing;
+    }
+
+    .sw-block-body {
+      padding: 10px 14px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .sw-block-tag {
+      flex: 1;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+
+    .sw-block-stmt-info {
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .sw-edit-btn {
+      padding: 2px 7px;
+      border-radius: 2px;
+      font-size: 10px;
+      cursor: pointer;
+      background: none;
+      border: 1px solid currentColor;
+      font-family: var(--mono);
+    }
+
+    .sw-block.intro {
+      border-color: #6080b0;
+    }
+
+    .sw-block.intro .sw-block-header {
+      background: #eef2f8;
+      color: #3060a0;
+    }
+
+    .sw-block.intro .sw-block-body {
+      background: #f8faff;
+    }
+
+    .sw-block.citation {
+      border-color: #b0a890;
+    }
+
+    .sw-block.citation .sw-block-header {
+      background: #f4f2ee;
+      color: #605040;
+    }
+
+    .sw-block.citation .sw-block-body {
+      background: #faf9f7;
+      font-style: italic;
+    }
+
+    .sw-block.transition {
+      border-color: #c09050;
+    }
+
+    .sw-block.transition .sw-block-header {
+      background: #fdf4e8;
+      color: #906030;
+    }
+
+    .sw-block.transition .sw-block-body {
+      background: #fffbf4;
+    }
+
+    .sw-block.drag-over {
+      opacity: .5;
+    }
+
+    /* Édition inline */
+    .sw-edit-area {
+      display: none;
+      margin-top: 8px;
+    }
+
+    .sw-edit-area.visible {
+      display: block;
+    }
+
+    .sw-edit-ta {
+      width: 100%;
+      min-height: 60px;
+      padding: 8px 10px;
+      font-size: 13px;
+      line-height: 1.7;
+      font-family: Georgia, serif;
+      border: 1px solid var(--accent);
+      border-radius: 3px;
+      resize: vertical;
+      background: var(--surface);
+    }
+
+    .sw-edit-actions {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+      margin-top: 6px;
+    }
+
+    /* Status + loading */
+    #sw-status {
+      position: fixed;
+      top: 90px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      padding: 6px;
+      font-size: 12px;
+      font-family: var(--mono);
+      z-index: 98;
+      display: none;
+    }
+
+    #sw-status.info {
+      background: #eef2f8;
+      color: #3060a0;
+      display: block;
+    }
+
+    #sw-status.success {
+      background: #d0f0d8;
+      color: #1a6030;
+      display: block;
+    }
+
+    #sw-status.error {
+      background: #fde8e0;
+      color: #8a2010;
+      display: block;
+    }
+
+    #sw-loading {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(248, 247, 244, .7);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #sw-loading.visible {
+      display: flex;
+    }
+
+    .sw-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #sw-login-wall {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--surface);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #sw-login-wall.visible {
+      display: flex;
+    }
+
+    #sw-login-wall a {
+      color: var(--blue);
+      font-size: 14px;
+    }
+
+    #sw-init-overlay {
+      display: flex;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 250;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- ── Header ── -->
-<div id="sw-header">
-  <button id="sw-back" onclick="history.back()">← Retour</button>
-  <span id="sw-title">…</span>
-  <span id="sw-resolved-badge" class="hidden"></span>
-</div>
-
-<!-- ── Tabs ── -->
-<div id="sw-tabs">
-  <div class="sw-tab active" data-tab="statements">Statements</div>
-  <div class="sw-tab" data-tab="narrative">Narrative</div>
-</div>
-
-<!-- ── Body ── -->
-<div id="sw-body">
-
-  <!-- STATEMENTS SECTION -->
-  <div class="sw-section active" id="sw-sec-statements">
-    <div class="sw-section-label">Rechercher un statement à ajouter</div>
-    <div id="sw-stmt-search-wrap">
-      <input id="sw-stmt-search" type="text" placeholder="Rechercher par description…"
-             onkeydown="if(event.key==='Enter')swSearchStatements()">
-      <button id="sw-stmt-search-btn" onclick="swSearchStatements()">Chercher</button>
-    </div>
-    <div id="sw-stmt-results"></div>
-
-    <div id="sw-story-stmts">
-      <div class="sw-section-label">Statements de la story</div>
-      <div id="sw-story-stmt-list"></div>
-    </div>
+  <!-- ── Header ── -->
+  <div id="sw-header">
+    <button id="sw-back" onclick="history.back()">← Retour</button>
+    <span id="sw-title">…</span>
+    <span id="sw-resolved-badge" class="hidden"></span>
   </div>
 
-  <!-- NARRATIVE SECTION -->
-  <div class="sw-section" id="sw-sec-narrative">
-    <div style="margin-bottom:16px;">
-      <div class="sw-section-label">Titre</div>
-      <div id="sw-narrative-title" style="font-size:16px;font-weight:bold;padding:6px 0;"></div>
-    </div>
-    <div id="sw-blocks"></div>
-    <div id="sw-narrative-empty" style="color:var(--muted);font-size:13px;padding:24px 0;text-align:center;display:none;">
-      Aucune narrative composée. Utilisez "Composer avec l'IA" dans l'onglet Statements.
-    </div>
+  <!-- ── Tabs ── -->
+  <div id="sw-tabs">
+    <div class="sw-tab active" data-tab="statements">Statements</div>
+    <div class="sw-tab" data-tab="narrative">Narrative</div>
   </div>
 
-</div>
-
-<!-- ── Action bar ── -->
-<div id="sw-compose-bar">
-  <button class="sw-btn sw-btn-ghost" id="sw-save-btn" onclick="swSave()" style="display:none;">Sauvegarder</button>
-  <button class="sw-btn sw-btn-ai" id="sw-compose-btn" onclick="swCompose()">✦ Composer avec l'IA</button>
-</div>
-
-<!-- ── Overlay states ── -->
-<div id="sw-status"></div>
-<div id="sw-loading">
-  <div class="sw-spinner"></div>
-  <div id="sw-loading-msg" style="font-family:var(--mono);font-size:12px;color:var(--muted);">Chargement…</div>
-</div>
-<div id="sw-login-wall">
-  <p style="font-family:var(--mono);font-size:13px;color:var(--muted);">Connexion requise.</p>
-  <a href="/login.html">Se connecter</a>
-</div>
-<div id="sw-init-overlay"><div class="sw-spinner"></div></div>
-
-<!-- ── Scripts ── -->
-<script>document.write('<script src="' + (location.hostname === 'localhost' ? 'http://localhost:3000/js/tools/nl.js' : 'https://cutup.news/dist/nl.min.js') + '"><\/script>')</script>
-<script>
-(function() {
-'use strict';
-
-/* ── Config ── */
-const _IS_DEV  = location.hostname === 'localhost';
-const _API_URL = _IS_DEV ? 'http://localhost:2000' : 'https://nodel.ai';
-
-/* ── State ── */
-let _storyId   = null;
-let _cover     = null;   // { id, name, statementids, nodeids, resolved }
-let _narrative = null;   // { paragraphs[] }
-let _isDirty    = false;
-let _stmtsDirty = false;
-let _dragSrc    = null;
-let _authDone   = false;
-
-const _nodeNames = {};   // nodeId → name (cache)
-
-/* ── DOM ── */
-const elTitle      = document.getElementById('sw-title');
-const elBadge      = document.getElementById('sw-resolved-badge');
-const elStatus     = document.getElementById('sw-status');
-const elLoading    = document.getElementById('sw-loading');
-const elLoadingMsg = document.getElementById('sw-loading-msg');
-const elLoginWall  = document.getElementById('sw-login-wall');
-const elInitOver   = document.getElementById('sw-init-overlay');
-const elBlocks     = document.getElementById('sw-blocks');
-const elEmpty      = document.getElementById('sw-narrative-empty');
-const elNarrTitle  = document.getElementById('sw-narrative-title');
-const elComposeBtn = document.getElementById('sw-compose-btn');
-const elSaveBtn    = document.getElementById('sw-save-btn');
-const elStmtList   = document.getElementById('sw-story-stmt-list');
-const elResults    = document.getElementById('sw-stmt-results');
-
-/* ── Tabs ── */
-document.querySelectorAll('.sw-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.sw-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.sw-section').forEach(s => s.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('sw-sec-' + tab.dataset.tab).classList.add('active');
-    _refreshSaveBtn(tab.dataset.tab);
-  });
-});
-
-function _refreshSaveBtn(tab) {
-  tab = tab || (document.querySelector('.sw-tab.active') || {}).dataset && document.querySelector('.sw-tab.active').dataset.tab;
-  const show = (tab === 'statements' && _stmtsDirty) || (tab === 'narrative' && _isDirty);
-  elSaveBtn.style.display = show ? '' : 'none';
-  elSaveBtn.textContent = tab === 'statements' ? 'Sauvegarder les statements' : 'Sauvegarder l\'ordre';
-}
-
-/* ── Utils ── */
-function showStatus(msg, type, ms) {
-  type = type || 'info';
-  ms   = ms === undefined ? 3000 : ms;
-  elStatus.textContent = msg;
-  elStatus.className = type;
-  if (ms > 0) setTimeout(function() { if (elStatus.className === type) elStatus.className = ''; }, ms);
-}
-function setLoading(visible, msg) {
-  elLoadingMsg.textContent = msg || 'Chargement…';
-  elLoading.classList.toggle('visible', visible);
-}
-function _esc(s) {
-  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-/* ── RPC helper ── */
-async function _rpc(name, params) {
-  const sb = NodelSb._supabase;
-  if (!sb) throw new Error('Client Supabase non initialisé');
-  const { data, error } = await sb.rpc(name, params);
-  if (error) throw new Error(error.message || JSON.stringify(error));
-  return data;
-}
-
-/* ── Node name cache ── */
-async function _ensureNodeNames(ids) {
-  const missing = (ids || []).filter(function(id) { return id && !_nodeNames[id]; });
-  if (!missing.length) return;
-  const { data } = await NodelSb._supabase
-    .from('nodes').select('id,name').in('id', missing);
-  (data || []).forEach(function(n) { _nodeNames[n.id] = n.name; });
-}
-function _getNodeName(id) {
-  return _nodeNames[id] || (id ? id.slice(0, 8) + '…' : '?');
-}
-
-/* ── Boot ── */
-document.addEventListener('DOMContentLoaded', function() {
-  const isProd  = !_IS_DEV;
-  const baseUrl = isProd ? 'https://cutup.news/' : undefined;
-  Nl.initialize({ environment: isProd ? 'prod' : 'dev', baseUrl: baseUrl });
-  _init();
-});
-
-function _init() {
-  const params = new URLSearchParams(location.search);
-  _storyId = params.get('id');
-  if (!_storyId) {
-    elInitOver.innerHTML = '<p style="font-family:monospace;padding:20px;">Paramètre ?id= manquant.</p>';
-    return;
-  }
-  document.addEventListener('nl-manager-ready', _onNlReady);
-}
-
-function _onNlReady() {
-  const isProd = !_IS_DEV;
-  NodelManager.start({ dataEnv: isProd ? 'prod' : 'dev', editionMode: true });
-
-  // NodelSb._supabase est disponible après NodelManager.start()
-  // Ajouter un listener auth pour le wizard (NodelManager en a déjà un en interne).
-  // INITIAL_SESSION = état initial (session existante → SIGNED_IN forwarded par NodelManager),
-  // mais ici on écoute l'event brut → on accepte les deux.
-  NodelSb._supabase.auth.onAuthStateChange(function(event, session) {
-    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session && !_authDone) {
-      _authDone = true;
-      _onAuth(session);
-    } else if ((event === 'SIGNED_OUT' || (event === 'INITIAL_SESSION' && !session)) && !_authDone) {
-      _authDone = true;
-      elLoginWall.classList.add('visible');
-      elInitOver.style.display = 'none';
-    }
-  });
-}
-
-async function _onAuth(session) {
-  NodelManager.session = session;
-  elInitOver.style.display = 'none';
-  setLoading(true, 'Chargement de la story…');
-  try {
-    await _loadStory();
-    await _loadNarrative();
-  } catch(e) {
-    showStatus('Erreur : ' + e.message, 'error', 0);
-  }
-  setLoading(false);
-}
-
-/* ── Load story ── */
-async function _loadStory() {
-  const { data: cover, error } = await NodelSb._supabase
-    .from('story_covers')
-    .select('id,name,statementids,nodeids,resolved')
-    .eq('id', _storyId)
-    .single();
-
-  if (error || !cover) throw new Error((error && error.message) || 'Story introuvable');
-
-  _cover = {
-    id:           _storyId,
-    name:         cover.name || '',
-    resolved:     cover.resolved,
-    statementids: cover.statementids || [],
-    nodeids:      cover.nodeids || [],
-  };
-
-  elTitle.textContent = _cover.name || 'Story';
-  _updateResolvedBadge(_cover.resolved);
-  await _ensureNodeNames(_cover.nodeids);
-
-  // Charger les statements de la story en cache
-  if (_cover.statementids.length) {
-    const { data: stmts } = await NodelSb._supabase
-      .from('statements')
-      .select('id,description_fr,sourcenodeid,targetnodeid')
-      .in('id', _cover.statementids);
-
-    const stmtObjs = (stmts || []).map(function(s) {
-      return Object.assign({}, s, { description: s.description_fr });
-    });
-
-    await _ensureNodeNames(stmtObjs.reduce(function(acc, s) {
-      if (s.sourcenodeid) acc.push(s.sourcenodeid);
-      if (s.targetnodeid) acc.push(s.targetnodeid);
-      return acc;
-    }, []));
-
-    if (!NodelManager.statements) NodelManager.statements = [];
-    stmtObjs.forEach(function(s) {
-      if (!NodelManager.statements.find(function(x) { return x.id === s.id; }))
-        NodelManager.statements.push(s);
-    });
-  }
-
-  _renderStoryStatements();
-}
-
-/* ── Load narrative ── */
-async function _loadNarrative() {
-  const data = await _rpc('load_story_narrative', { p_story_id: _storyId });
-  if (!data || data.error || !data.paragraphs) {
-    _narrative = { paragraphs: [] };
-    elEmpty.style.display = '';
-    return;
-  }
-  _narrative = { paragraphs: data.paragraphs };
-  if (data.title) { _cover.name = data.title; elTitle.textContent = data.title; }
-  _renderNarrative();
-}
-
-/* ── Resolved badge ── */
-function _updateResolvedBadge(resolved) {
-  elBadge.classList.remove('hidden', 'resolved', 'unresolved');
-  if (resolved === null || resolved === undefined) { elBadge.classList.add('hidden'); return; }
-  elBadge.classList.add(resolved ? 'resolved' : 'unresolved');
-  elBadge.textContent = resolved ? '✓ Résolu' : '✗ Non résolu';
-}
-
-/* ── Render story statements ── */
-function _renderStoryStatements() {
-  const ids = (_cover && _cover.statementids) || [];
-  if (!ids.length) {
-    elStmtList.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0;">Aucun statement dans cette story.</div>';
-    return;
-  }
-  elStmtList.innerHTML = '';
-  ids.forEach(function(id) {
-    const stmt = (NodelManager.statements || []).find(function(s) { return s.id === id; });
-    if (stmt) {
-      elStmtList.appendChild(_buildStmtRow(stmt, true));
-    } else {
-      const row = document.createElement('div');
-      row.className = 'sw-stmt-row in-story';
-      row.innerHTML = '<div class="sw-stmt-row-desc" style="font-family:var(--mono);color:var(--muted);">' + id.slice(0,8) + '…</div>' +
-        '<button class="sw-stmt-toggle remove" data-id="' + id + '">✕ Retirer</button>';
-      row.querySelector('button').addEventListener('click', function() { swToggleStatement(id, true); });
-      elStmtList.appendChild(row);
-    }
-  });
-}
-
-function _buildStmtRow(stmt, inStory) {
-  const row  = document.createElement('div');
-  row.className = 'sw-stmt-row' + (inStory ? ' in-story' : '');
-  const src  = _getNodeName(stmt.sourcenodeid);
-  const tgt  = _getNodeName(stmt.targetnodeid);
-  const desc = stmt.description || stmt.description_fr || '(sans description)';
-  row.innerHTML =
-    '<div class="sw-stmt-row-desc" title="' + _esc(desc) + '">' + _esc(desc) + '</div>' +
-    '<div class="sw-stmt-row-nodes">' + _esc(src) + ' → ' + _esc(tgt) + '</div>' +
-    '<button class="sw-stmt-toggle ' + (inStory ? 'remove' : 'add') + '" data-id="' + stmt.id + '">' +
-    (inStory ? '✕ Retirer' : '+ Ajouter') + '</button>';
-  row.querySelector('button').addEventListener('click', function() { swToggleStatement(stmt.id, inStory); });
-  return row;
-}
-
-/* ── Statement search ── */
-window.swSearchStatements = async function() {
-  const query = document.getElementById('sw-stmt-search').value.trim();
-  if (!query || query.length < 2) {
-    elResults.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:4px 0;">Saisir au moins 2 caractères.</div>';
-    return;
-  }
-  try {
-    const { data, error } = await NodelSb._supabase
-      .from('statements')
-      .select('id,description_fr,sourcenodeid,targetnodeid')
-      .ilike('description_fr', '%' + query + '%')
-      .limit(25);
-
-    if (error) throw error;
-    const stmts = (data || []).map(function(s) {
-      return Object.assign({}, s, { description: s.description_fr });
-    });
-
-    const nodeIds = stmts.reduce(function(acc, s) {
-      if (s.sourcenodeid) acc.push(s.sourcenodeid);
-      if (s.targetnodeid) acc.push(s.targetnodeid);
-      return acc;
-    }, []);
-    await _ensureNodeNames(nodeIds);
-
-    // Mettre en cache
-    if (!NodelManager.statements) NodelManager.statements = [];
-    stmts.forEach(function(s) {
-      if (!NodelManager.statements.find(function(x) { return x.id === s.id; }))
-        NodelManager.statements.push(s);
-    });
-
-    elResults.innerHTML = '';
-    if (!stmts.length) {
-      elResults.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:4px 0;">Aucun résultat.</div>';
-      return;
-    }
-    stmts.forEach(function(s) {
-      const inStory = (_cover && _cover.statementids && _cover.statementids.indexOf(s.id) !== -1);
-      elResults.appendChild(_buildStmtRow(s, inStory));
-    });
-  } catch(e) {
-    showStatus('Erreur recherche : ' + e.message, 'error');
-  }
-};
-
-/* ── Toggle statement (in-memory) ── */
-window.swToggleStatement = function(stmtId, isInStory) {
-  if (isInStory) {
-    _cover.statementids = (_cover.statementids || []).filter(function(id) { return id !== stmtId; });
-  } else {
-    if ((_cover.statementids || []).indexOf(stmtId) === -1) {
-      _cover.statementids = (_cover.statementids || []).concat([stmtId]);
-    }
-  }
-  _stmtsDirty = true;
-  _renderStoryStatements();
-  _refreshSaveBtn('statements');
-  // Refresh les résultats de recherche si visibles
-  const q = document.getElementById('sw-stmt-search').value.trim();
-  if (elResults.children.length && q.length >= 2) swSearchStatements();
-};
-
-/* ── Save statements (batch) ── */
-window.swSaveStatements = async function() {
-  try {
-    setLoading(true, 'Sauvegarde…');
-    const res = await _rpc('save_story_statements', {
-      p_story_id: _storyId,
-      p_stmt_ids: _cover.statementids || [],
-    });
-    if (res && res.error) throw new Error(res.error_code);
-    if (res && res.resolved !== undefined) {
-      _cover.resolved = res.resolved;
-      _updateResolvedBadge(_cover.resolved);
-    }
-    _stmtsDirty = false;
-    elSaveBtn.style.display = 'none';
-    showStatus('Statements sauvegardés.', 'success');
-  } catch(e) {
-    showStatus('Erreur : ' + e.message, 'error');
-  }
-  setLoading(false);
-};
-
-/* ── Save dispatcher ── */
-window.swSave = function() {
-  const tab = (document.querySelector('.sw-tab.active') || {}).dataset;
-  if (tab && tab.tab === 'statements') swSaveStatements();
-  else swSaveNarrative();
-};
-
-/* ── Compose ── */
-window.swCompose = async function() {
-  const hasExisting = _narrative && _narrative.paragraphs && _narrative.paragraphs.length > 0;
-  if (hasExisting && _isDirty) {
-    if (!confirm('Recomposer effacera vos éditions manuelles. Continuer ?')) return;
-  } else if (hasExisting) {
-    if (!confirm('Recomposer remplacera la narrative actuelle. Continuer ?')) return;
-  }
-
-  if (!(_cover && _cover.statementids && _cover.statementids.length)) {
-    showStatus('Ajoutez au moins un statement avant de composer.', 'error');
-    return;
-  }
-
-  const jwt = NodelManager.session && NodelManager.session.access_token;
-  if (!jwt) { showStatus('Non authentifié.', 'error'); return; }
-
-  setLoading(true, 'Composition IA en cours… (peut prendre 30s)');
-  elComposeBtn.disabled = true;
-
-  try {
-    const resp = await fetch(_API_URL + '/story/compose', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
-      body: JSON.stringify({ story_id: _storyId }),
-    });
-    const result = await resp.json();
-    if (!resp.ok || result.error) throw new Error(result.error || 'HTTP ' + resp.status);
-
-    // Recharger la narrative
-    const data = await _rpc('load_story_narrative', { p_story_id: _storyId });
-    if (!data || data.error) throw new Error((data && data.error_code) || 'Narrative non chargée');
-
-    _narrative = { paragraphs: data.paragraphs || [] };
-    if (data.title) { _cover.name = data.title; elTitle.textContent = data.title; }
-    _isDirty = false;
-    _refreshSaveBtn('narrative');
-    elComposeBtn.textContent = '🔄 Recomposer';
-    _renderNarrative();
-
-    // Switcher sur l'onglet narrative
-    document.querySelector('[data-tab="narrative"]').click();
-    showStatus('Narrative composée — ' + result.block_count + ' blocs.', 'success');
-  } catch(e) {
-    showStatus('Erreur composition : ' + e.message, 'error', 0);
-  }
-  setLoading(false);
-  elComposeBtn.disabled = false;
-};
-
-/* ── Render narrative ── */
-function _renderNarrative() {
-  const paras = (_narrative && _narrative.paragraphs) || [];
-  elNarrTitle.textContent = (_cover && _cover.name) || '';
-  elEmpty.style.display = paras.length ? 'none' : '';
-  elComposeBtn.textContent = paras.length ? '🔄 Recomposer' : '✦ Composer avec l\'IA';
-  _renderBlocks(paras);
-}
-
-function _renderBlocks(paragraphs) {
-  elBlocks.innerHTML = '';
-  (paragraphs || []).forEach(function(para, idx) {
-    elBlocks.appendChild(_buildBlock(para, idx + 1));
-  });
-  _initDragDrop();
-}
-
-function _buildBlock(para, num) {
-  const typeMap = { story_intro: 'intro', story_citation: 'citation', story_transition: 'transition' };
-  const labelMap = { story_intro: 'INTRO', story_citation: 'CITATION', story_transition: 'TRANSITION' };
-  const typeClass = typeMap[para.type] || 'intro';
-  const typeLabel = labelMap[para.type] || para.type;
-  const editable  = para.type !== 'story_citation';
-
-  const el = document.createElement('div');
-  el.className = 'sw-block ' + typeClass;
-  el.dataset.id  = para.id;
-  el.dataset.num = para.story_number;
-  el.draggable   = true;
-
-  // Header
-  const header = document.createElement('div');
-  header.className = 'sw-block-header';
-
-  const numSpan = document.createElement('span');
-  numSpan.style.cssText = 'font-size:10px;opacity:.5;min-width:16px;';
-  numSpan.textContent = num;
-
-  const tag = document.createElement('span');
-  tag.className = 'sw-block-tag';
-  tag.textContent = typeLabel;
-
-  header.appendChild(numSpan);
-  header.appendChild(tag);
-
-  if (para.type === 'story_citation' && para.statementid) {
-    const stmt = (NodelManager.statements || []).find(function(s) { return s.id === para.statementid; });
-    if (stmt) {
-      const info = document.createElement('span');
-      info.className = 'sw-block-stmt-info';
-      info.textContent = _getNodeName(stmt.sourcenodeid) + ' → ' + _getNodeName(stmt.targetnodeid);
-      header.appendChild(info);
-    }
-  } else if (editable) {
-    const editBtn = document.createElement('button');
-    editBtn.className = 'sw-edit-btn';
-    editBtn.textContent = '✎ éditer';
-    editBtn.addEventListener('click', function(e) { e.stopPropagation(); _toggleEditArea(el); });
-    header.appendChild(editBtn);
-  }
-
-  el.appendChild(header);
-
-  // Body
-  const body = document.createElement('div');
-  body.className = 'sw-block-body';
-
-  (para.sentences || []).forEach(function(ss) {
-    const p = document.createElement('p');
-    p.style.marginBottom = '4px';
-    p.textContent = (para.type === 'story_citation' ? ss.source_text : ss.text) || '';
-    body.appendChild(p);
-  });
-
-  if (para.type === 'story_citation' && !para.paragraphid && (para.sentences || []).length > 1) {
-    const badge = document.createElement('span');
-    badge.style.cssText = 'font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:4px;display:block;';
-    badge.textContent = '↕ cross-paragraphe';
-    body.appendChild(badge);
-  }
-
-  // Zone d'édition inline (intro/transition seulement)
-  if (editable) {
-    const editArea = document.createElement('div');
-    editArea.className = 'sw-edit-area';
-
-    const fullText = (para.sentences || []).map(function(ss) { return ss.text || ''; }).filter(Boolean).join('\n');
-    const ta = document.createElement('textarea');
-    ta.className = 'sw-edit-ta';
-    ta.value = fullText;
-
-    const acts = document.createElement('div');
-    acts.className = 'sw-edit-actions';
-
-    const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'sw-btn sw-btn-ghost';
-    cancelBtn.style.fontSize = '11px';
-    cancelBtn.textContent = 'Annuler';
-    cancelBtn.addEventListener('click', function() { editArea.classList.remove('visible'); });
-
-    const okBtn = document.createElement('button');
-    okBtn.className = 'sw-btn sw-btn-primary';
-    okBtn.style.fontSize = '11px';
-    okBtn.textContent = '✓ Valider';
-    (function(p, t, ea, bd) {
-      okBtn.addEventListener('click', function() { _saveBlockEdit(p, t.value, ea, bd); });
-    })(para, ta, editArea, body);
-
-    acts.appendChild(cancelBtn);
-    acts.appendChild(okBtn);
-    editArea.appendChild(ta);
-    editArea.appendChild(acts);
-    body.appendChild(editArea);
-  }
-
-  el.appendChild(body);
-  return el;
-}
-
-function _toggleEditArea(el) {
-  const area = el.querySelector('.sw-edit-area');
-  if (area) area.classList.toggle('visible');
-}
-
-async function _saveBlockEdit(para, newText, editArea, bodyEl) {
-  const sentences = (para.sentences || []).filter(function(ss) { return ss.type !== 'story_citation'; });
-  if (!sentences.length) return;
-
-  const lines = newText.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
-
-  try {
-    for (let i = 0; i < sentences.length; i++) {
-      const ss  = sentences[i];
-      const txt = (lines[i] !== undefined ? lines[i] : null) || (lines[0] || '');
-      const res = await _rpc('update_story_sentence_text', { p_id: ss.id, p_text: txt });
-      if (res && res.error) throw new Error(res.error_code);
-      ss.text = txt;
-    }
-
-    // Mettre à jour les <p> correspondants dans le body
-    const ps = Array.from(bodyEl.querySelectorAll('p'));
-    sentences.forEach(function(ss, i) { if (ps[i]) ps[i].textContent = ss.text; });
-
-    editArea.classList.remove('visible');
-    _isDirty = true;
-    _refreshSaveBtn('narrative');
-    showStatus('Bloc mis à jour.', 'success');
-  } catch(e) {
-    showStatus('Erreur sauvegarde : ' + e.message, 'error');
-  }
-}
-
-/* ── Drag-and-drop ── */
-function _initDragDrop() {
-  const blocks = Array.from(elBlocks.querySelectorAll('.sw-block'));
-  blocks.forEach(function(b) {
-    b.addEventListener('dragstart', function(e) {
-      _dragSrc = b;
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    b.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      blocks.forEach(function(x) { x.classList.remove('drag-over'); });
-      b.classList.add('drag-over');
-    });
-    b.addEventListener('dragleave', function() { b.classList.remove('drag-over'); });
-    b.addEventListener('drop', function(e) {
-      e.preventDefault();
-      blocks.forEach(function(x) { x.classList.remove('drag-over'); });
-      if (!_dragSrc || _dragSrc === b) return;
-      const all = Array.from(elBlocks.querySelectorAll('.sw-block'));
-      const si  = all.indexOf(_dragSrc);
-      const ti  = all.indexOf(b);
-      elBlocks.insertBefore(_dragSrc, si < ti ? b.nextSibling : b);
-      Array.from(elBlocks.querySelectorAll('.sw-block')).forEach(function(bl, i) {
-        const n = bl.querySelector('.sw-block-header span:first-child');
-        if (n) n.textContent = i + 1;
-      });
-      _isDirty = true;
-      _refreshSaveBtn('narrative');
-    });
-    b.addEventListener('dragend', function() {
-      _dragSrc = null;
-      blocks.forEach(function(x) { x.classList.remove('drag-over'); });
-    });
-  });
-}
-
-/* ── Save order ── */
-window.swSaveNarrative = async function() {
-  const order = Array.from(elBlocks.querySelectorAll('.sw-block')).map(function(b) { return b.dataset.id; });
-  if (!order.length) return;
-  try {
-    setLoading(true, 'Sauvegarde de l\'ordre…');
-    const res = await _rpc('reorder_story_paragraphs', { p_story_id: _storyId, p_order: order });
-    if (res && res.error) throw new Error(res.error_code);
-    _isDirty = false;
-    _refreshSaveBtn('narrative');
-    showStatus('Ordre sauvegardé.', 'success');
-  } catch(e) {
-    showStatus('Erreur : ' + e.message, 'error');
-  }
-  setLoading(false);
-};
-
-})();
-</script>
+  <!-- ── Body ── -->
+  <div id="sw-body">
+
+    <!-- STATEMENTS SECTION -->
+    <div class="sw-section active" id="sw-sec-statements">
+      <div class="sw-section-label">Rechercher un statement à ajouter</div>
+      <div id="sw-stmt-search-wrap">
+        <input id="sw-stmt-search" type="text" placeholder="Rechercher par description…"
+          onkeydown="if(event.key==='Enter')swSearchStatements()">
+        <button id="sw-stmt-search-btn" onclick="swSearchStatements()">Chercher</button>
+      </div>
+      <div id="sw-stmt-results"></div>
+
+      <div id="sw-story-stmts">
+        <div class="sw-section-label">Statements de la story</div>
+        <div id="sw-story-stmt-list"></div>
+      </div>
+    </div>
+
+    <!-- NARRATIVE SECTION -->
+    <div class="sw-section" id="sw-sec-narrative">
+      <div style="margin-bottom:16px;">
+        <div class="sw-section-label">Titre</div>
+        <div id="sw-narrative-title" style="font-size:16px;font-weight:bold;padding:6px 0;"></div>
+      </div>
+      <div id="sw-blocks"></div>
+      <div id="sw-narrative-empty"
+        style="color:var(--muted);font-size:13px;padding:24px 0;text-align:center;display:none;">
+        Aucune narrative composée. Utilisez "Composer avec l'IA" dans l'onglet Statements.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Action bar ── -->
+  <div id="sw-compose-bar">
+    <button class="sw-btn sw-btn-ghost" id="sw-save-btn" onclick="swSave()" style="display:none;">Sauvegarder</button>
+    <button class="sw-btn sw-btn-ai" id="sw-compose-btn" onclick="swCompose()">✦ Composer avec l'IA</button>
+  </div>
+
+  <!-- ── Overlay states ── -->
+  <div id="sw-status"></div>
+  <div id="sw-loading">
+    <div class="sw-spinner"></div>
+    <div id="sw-loading-msg" style="font-family:var(--mono);font-size:12px;color:var(--muted);">Chargement…</div>
+  </div>
+  <div id="sw-login-wall">
+    <p style="font-family:var(--mono);font-size:13px;color:var(--muted);">Connexion requise.</p>
+    <a href="/login.html">Se connecter</a>
+  </div>
+  <div id="sw-init-overlay">
+    <div class="sw-spinner"></div>
+  </div>
+
+  <!-- ── Scripts ── -->
+  <script>document.write('<script src="' + (location.hostname === 'localhost' ? 'http://localhost:3000/js/tools/nl.js' : 'https://cutup.news/dist/nl.min.js') + '"><\/script>')</script>
+  <script>
+      (function () {
+        'use strict';
+
+        /* ── Config ── */
+        const _IS_DEV = location.hostname === 'localhost';
+        const _API_URL = _IS_DEV ? 'http://localhost:2000' : 'https://nodel-wjkg.onrender.com';
+
+        /* ── State ── */
+        let _storyId = null;
+        let _cover = null;   // { id, name, statementids, nodeids, resolved }
+        let _narrative = null;   // { paragraphs[] }
+        let _isDirty = false;
+        let _stmtsDirty = false;
+        let _dragSrc = null;
+        let _authDone = false;
+
+        const _nodeNames = {};   // nodeId → name (cache)
+
+        /* ── DOM ── */
+        const elTitle = document.getElementById('sw-title');
+        const elBadge = document.getElementById('sw-resolved-badge');
+        const elStatus = document.getElementById('sw-status');
+        const elLoading = document.getElementById('sw-loading');
+        const elLoadingMsg = document.getElementById('sw-loading-msg');
+        const elLoginWall = document.getElementById('sw-login-wall');
+        const elInitOver = document.getElementById('sw-init-overlay');
+        const elBlocks = document.getElementById('sw-blocks');
+        const elEmpty = document.getElementById('sw-narrative-empty');
+        const elNarrTitle = document.getElementById('sw-narrative-title');
+        const elComposeBtn = document.getElementById('sw-compose-btn');
+        const elSaveBtn = document.getElementById('sw-save-btn');
+        const elStmtList = document.getElementById('sw-story-stmt-list');
+        const elResults = document.getElementById('sw-stmt-results');
+
+        /* ── Tabs ── */
+        document.querySelectorAll('.sw-tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            document.querySelectorAll('.sw-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.sw-section').forEach(s => s.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('sw-sec-' + tab.dataset.tab).classList.add('active');
+            _refreshSaveBtn(tab.dataset.tab);
+          });
+        });
+
+        function _refreshSaveBtn(tab) {
+          tab = tab || (document.querySelector('.sw-tab.active') || {}).dataset && document.querySelector('.sw-tab.active').dataset.tab;
+          const show = (tab === 'statements' && _stmtsDirty) || (tab === 'narrative' && _isDirty);
+          elSaveBtn.style.display = show ? '' : 'none';
+          elSaveBtn.textContent = tab === 'statements' ? 'Sauvegarder les statements' : 'Sauvegarder l\'ordre';
+        }
+
+        /* ── Utils ── */
+        function showStatus(msg, type, ms) {
+          type = type || 'info';
+          ms = ms === undefined ? 3000 : ms;
+          elStatus.textContent = msg;
+          elStatus.className = type;
+          if (ms > 0) setTimeout(function () { if (elStatus.className === type) elStatus.className = ''; }, ms);
+        }
+        function setLoading(visible, msg) {
+          elLoadingMsg.textContent = msg || 'Chargement…';
+          elLoading.classList.toggle('visible', visible);
+        }
+        function _esc(s) {
+          return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        /* ── RPC helper ── */
+        async function _rpc(name, params) {
+          const sb = NodelSb._supabase;
+          if (!sb) throw new Error('Client Supabase non initialisé');
+          const { data, error } = await sb.rpc(name, params);
+          if (error) throw new Error(error.message || JSON.stringify(error));
+          return data;
+        }
+
+        /* ── Node name cache ── */
+        async function _ensureNodeNames(ids) {
+          const missing = (ids || []).filter(function (id) { return id && !_nodeNames[id]; });
+          if (!missing.length) return;
+          const { data } = await NodelSb._supabase
+            .from('nodes').select('id,name').in('id', missing);
+          (data || []).forEach(function (n) { _nodeNames[n.id] = n.name; });
+        }
+        function _getNodeName(id) {
+          return _nodeNames[id] || (id ? id.slice(0, 8) + '…' : '?');
+        }
+
+        /* ── Boot ── */
+        document.addEventListener('DOMContentLoaded', function () {
+          const isProd = !_IS_DEV;
+          const baseUrl = isProd ? 'https://cutup.news/' : undefined;
+          Nl.initialize({ environment: isProd ? 'prod' : 'dev', baseUrl: baseUrl });
+          _init();
+        });
+
+        function _init() {
+          const params = new URLSearchParams(location.search);
+          _storyId = params.get('id');
+          if (!_storyId) {
+            elInitOver.innerHTML = '<p style="font-family:monospace;padding:20px;">Paramètre ?id= manquant.</p>';
+            return;
+          }
+          document.addEventListener('nl-manager-ready', _onNlReady);
+        }
+
+        function _onNlReady() {
+          const isProd = !_IS_DEV;
+          NodelManager.start({ dataEnv: isProd ? 'prod' : 'dev', editionMode: true });
+
+          // NodelSb._supabase est disponible après NodelManager.start()
+          // Ajouter un listener auth pour le wizard (NodelManager en a déjà un en interne).
+          // INITIAL_SESSION = état initial (session existante → SIGNED_IN forwarded par NodelManager),
+          // mais ici on écoute l'event brut → on accepte les deux.
+          NodelSb._supabase.auth.onAuthStateChange(function (event, session) {
+            if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session && !_authDone) {
+              _authDone = true;
+              _onAuth(session);
+            } else if ((event === 'SIGNED_OUT' || (event === 'INITIAL_SESSION' && !session)) && !_authDone) {
+              _authDone = true;
+              elLoginWall.classList.add('visible');
+              elInitOver.style.display = 'none';
+            }
+          });
+        }
+
+        async function _onAuth(session) {
+          NodelManager.session = session;
+          elInitOver.style.display = 'none';
+          setLoading(true, 'Chargement de la story…');
+          try {
+            await _loadStory();
+            await _loadNarrative();
+          } catch (e) {
+            showStatus('Erreur : ' + e.message, 'error', 0);
+          }
+          setLoading(false);
+        }
+
+        /* ── Load story ── */
+        async function _loadStory() {
+          const { data: cover, error } = await NodelSb._supabase
+            .from('story_covers')
+            .select('id,name,statementids,nodeids,resolved')
+            .eq('id', _storyId)
+            .single();
+
+          if (error || !cover) throw new Error((error && error.message) || 'Story introuvable');
+
+          _cover = {
+            id: _storyId,
+            name: cover.name || '',
+            resolved: cover.resolved,
+            statementids: cover.statementids || [],
+            nodeids: cover.nodeids || [],
+          };
+
+          elTitle.textContent = _cover.name || 'Story';
+          _updateResolvedBadge(_cover.resolved);
+          await _ensureNodeNames(_cover.nodeids);
+
+          // Charger les statements de la story en cache
+          if (_cover.statementids.length) {
+            const { data: stmts } = await NodelSb._supabase
+              .from('statements')
+              .select('id,description_fr,sourcenodeid,targetnodeid')
+              .in('id', _cover.statementids);
+
+            const stmtObjs = (stmts || []).map(function (s) {
+              return Object.assign({}, s, { description: s.description_fr });
+            });
+
+            await _ensureNodeNames(stmtObjs.reduce(function (acc, s) {
+              if (s.sourcenodeid) acc.push(s.sourcenodeid);
+              if (s.targetnodeid) acc.push(s.targetnodeid);
+              return acc;
+            }, []));
+
+            if (!NodelManager.statements) NodelManager.statements = [];
+            stmtObjs.forEach(function (s) {
+              if (!NodelManager.statements.find(function (x) { return x.id === s.id; }))
+                NodelManager.statements.push(s);
+            });
+          }
+
+          _renderStoryStatements();
+        }
+
+        /* ── Load narrative ── */
+        async function _loadNarrative() {
+          const data = await _rpc('load_story_narrative', { p_story_id: _storyId });
+          if (!data || data.error || !data.paragraphs) {
+            _narrative = { paragraphs: [] };
+            elEmpty.style.display = '';
+            return;
+          }
+          _narrative = { paragraphs: data.paragraphs };
+          if (data.title) { _cover.name = data.title; elTitle.textContent = data.title; }
+          _renderNarrative();
+        }
+
+        /* ── Resolved badge ── */
+        function _updateResolvedBadge(resolved) {
+          elBadge.classList.remove('hidden', 'resolved', 'unresolved');
+          if (resolved === null || resolved === undefined) { elBadge.classList.add('hidden'); return; }
+          elBadge.classList.add(resolved ? 'resolved' : 'unresolved');
+          elBadge.textContent = resolved ? '✓ Résolu' : '✗ Non résolu';
+        }
+
+        /* ── Render story statements ── */
+        function _renderStoryStatements() {
+          const ids = (_cover && _cover.statementids) || [];
+          if (!ids.length) {
+            elStmtList.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0;">Aucun statement dans cette story.</div>';
+            return;
+          }
+          elStmtList.innerHTML = '';
+          ids.forEach(function (id) {
+            const stmt = (NodelManager.statements || []).find(function (s) { return s.id === id; });
+            if (stmt) {
+              elStmtList.appendChild(_buildStmtRow(stmt, true));
+            } else {
+              const row = document.createElement('div');
+              row.className = 'sw-stmt-row in-story';
+              row.innerHTML = '<div class="sw-stmt-row-desc" style="font-family:var(--mono);color:var(--muted);">' + id.slice(0, 8) + '…</div>' +
+                '<button class="sw-stmt-toggle remove" data-id="' + id + '">✕ Retirer</button>';
+              row.querySelector('button').addEventListener('click', function () { swToggleStatement(id, true); });
+              elStmtList.appendChild(row);
+            }
+          });
+        }
+
+        function _buildStmtRow(stmt, inStory) {
+          const row = document.createElement('div');
+          row.className = 'sw-stmt-row' + (inStory ? ' in-story' : '');
+          const src = _getNodeName(stmt.sourcenodeid);
+          const tgt = _getNodeName(stmt.targetnodeid);
+          const desc = stmt.description || stmt.description_fr || '(sans description)';
+          row.innerHTML =
+            '<div class="sw-stmt-row-desc" title="' + _esc(desc) + '">' + _esc(desc) + '</div>' +
+            '<div class="sw-stmt-row-nodes">' + _esc(src) + ' → ' + _esc(tgt) + '</div>' +
+            '<button class="sw-stmt-toggle ' + (inStory ? 'remove' : 'add') + '" data-id="' + stmt.id + '">' +
+            (inStory ? '✕ Retirer' : '+ Ajouter') + '</button>';
+          row.querySelector('button').addEventListener('click', function () { swToggleStatement(stmt.id, inStory); });
+          return row;
+        }
+
+        /* ── Statement search ── */
+        window.swSearchStatements = async function () {
+          const query = document.getElementById('sw-stmt-search').value.trim();
+          if (!query || query.length < 2) {
+            elResults.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:4px 0;">Saisir au moins 2 caractères.</div>';
+            return;
+          }
+          try {
+            const { data, error } = await NodelSb._supabase
+              .from('statements')
+              .select('id,description_fr,sourcenodeid,targetnodeid')
+              .ilike('description_fr', '%' + query + '%')
+              .limit(25);
+
+            if (error) throw error;
+            const stmts = (data || []).map(function (s) {
+              return Object.assign({}, s, { description: s.description_fr });
+            });
+
+            const nodeIds = stmts.reduce(function (acc, s) {
+              if (s.sourcenodeid) acc.push(s.sourcenodeid);
+              if (s.targetnodeid) acc.push(s.targetnodeid);
+              return acc;
+            }, []);
+            await _ensureNodeNames(nodeIds);
+
+            // Mettre en cache
+            if (!NodelManager.statements) NodelManager.statements = [];
+            stmts.forEach(function (s) {
+              if (!NodelManager.statements.find(function (x) { return x.id === s.id; }))
+                NodelManager.statements.push(s);
+            });
+
+            elResults.innerHTML = '';
+            if (!stmts.length) {
+              elResults.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:4px 0;">Aucun résultat.</div>';
+              return;
+            }
+            stmts.forEach(function (s) {
+              const inStory = (_cover && _cover.statementids && _cover.statementids.indexOf(s.id) !== -1);
+              elResults.appendChild(_buildStmtRow(s, inStory));
+            });
+          } catch (e) {
+            showStatus('Erreur recherche : ' + e.message, 'error');
+          }
+        };
+
+        /* ── Toggle statement (in-memory) ── */
+        window.swToggleStatement = function (stmtId, isInStory) {
+          if (isInStory) {
+            _cover.statementids = (_cover.statementids || []).filter(function (id) { return id !== stmtId; });
+          } else {
+            if ((_cover.statementids || []).indexOf(stmtId) === -1) {
+              _cover.statementids = (_cover.statementids || []).concat([stmtId]);
+            }
+          }
+          _stmtsDirty = true;
+          _renderStoryStatements();
+          _refreshSaveBtn('statements');
+          // Refresh les résultats de recherche si visibles
+          const q = document.getElementById('sw-stmt-search').value.trim();
+          if (elResults.children.length && q.length >= 2) swSearchStatements();
+        };
+
+        /* ── Save statements (batch) ── */
+        window.swSaveStatements = async function () {
+          try {
+            setLoading(true, 'Sauvegarde…');
+            const res = await _rpc('save_story_statements', {
+              p_story_id: _storyId,
+              p_stmt_ids: _cover.statementids || [],
+            });
+            if (res && res.error) throw new Error(res.error_code);
+            if (res && res.resolved !== undefined) {
+              _cover.resolved = res.resolved;
+              _updateResolvedBadge(_cover.resolved);
+            }
+            _stmtsDirty = false;
+            elSaveBtn.style.display = 'none';
+            showStatus('Statements sauvegardés.', 'success');
+          } catch (e) {
+            showStatus('Erreur : ' + e.message, 'error');
+          }
+          setLoading(false);
+        };
+
+        /* ── Save dispatcher ── */
+        window.swSave = function () {
+          const tab = (document.querySelector('.sw-tab.active') || {}).dataset;
+          if (tab && tab.tab === 'statements') swSaveStatements();
+          else swSaveNarrative();
+        };
+
+        /* ── Compose ── */
+        window.swCompose = async function () {
+          const hasExisting = _narrative && _narrative.paragraphs && _narrative.paragraphs.length > 0;
+          if (hasExisting && _isDirty) {
+            if (!confirm('Recomposer effacera vos éditions manuelles. Continuer ?')) return;
+          } else if (hasExisting) {
+            if (!confirm('Recomposer remplacera la narrative actuelle. Continuer ?')) return;
+          }
+
+          if (!(_cover && _cover.statementids && _cover.statementids.length)) {
+            showStatus('Ajoutez au moins un statement avant de composer.', 'error');
+            return;
+          }
+
+          const jwt = NodelManager.session && NodelManager.session.access_token;
+          if (!jwt) { showStatus('Non authentifié.', 'error'); return; }
+
+          setLoading(true, 'Composition IA en cours… (peut prendre 30s)');
+          elComposeBtn.disabled = true;
+
+          try {
+            const resp = await fetch(_API_URL + '/story/compose', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+              body: JSON.stringify({ story_id: _storyId }),
+            });
+            const result = await resp.json();
+            if (!resp.ok || result.error) throw new Error(result.error || 'HTTP ' + resp.status);
+
+            // Recharger la narrative
+            const data = await _rpc('load_story_narrative', { p_story_id: _storyId });
+            if (!data || data.error) throw new Error((data && data.error_code) || 'Narrative non chargée');
+
+            _narrative = { paragraphs: data.paragraphs || [] };
+            if (data.title) { _cover.name = data.title; elTitle.textContent = data.title; }
+            _isDirty = false;
+            _refreshSaveBtn('narrative');
+            elComposeBtn.textContent = '🔄 Recomposer';
+            _renderNarrative();
+
+            // Switcher sur l'onglet narrative
+            document.querySelector('[data-tab="narrative"]').click();
+            showStatus('Narrative composée — ' + result.block_count + ' blocs.', 'success');
+          } catch (e) {
+            showStatus('Erreur composition : ' + e.message, 'error', 0);
+          }
+          setLoading(false);
+          elComposeBtn.disabled = false;
+        };
+
+        /* ── Render narrative ── */
+        function _renderNarrative() {
+          const paras = (_narrative && _narrative.paragraphs) || [];
+          elNarrTitle.textContent = (_cover && _cover.name) || '';
+          elEmpty.style.display = paras.length ? 'none' : '';
+          elComposeBtn.textContent = paras.length ? '🔄 Recomposer' : '✦ Composer avec l\'IA';
+          _renderBlocks(paras);
+        }
+
+        function _renderBlocks(paragraphs) {
+          elBlocks.innerHTML = '';
+          (paragraphs || []).forEach(function (para, idx) {
+            elBlocks.appendChild(_buildBlock(para, idx + 1));
+          });
+          _initDragDrop();
+        }
+
+        function _buildBlock(para, num) {
+          const typeMap = { story_intro: 'intro', story_citation: 'citation', story_transition: 'transition' };
+          const labelMap = { story_intro: 'INTRO', story_citation: 'CITATION', story_transition: 'TRANSITION' };
+          const typeClass = typeMap[para.type] || 'intro';
+          const typeLabel = labelMap[para.type] || para.type;
+          const editable = para.type !== 'story_citation';
+
+          const el = document.createElement('div');
+          el.className = 'sw-block ' + typeClass;
+          el.dataset.id = para.id;
+          el.dataset.num = para.story_number;
+          el.draggable = true;
+
+          // Header
+          const header = document.createElement('div');
+          header.className = 'sw-block-header';
+
+          const numSpan = document.createElement('span');
+          numSpan.style.cssText = 'font-size:10px;opacity:.5;min-width:16px;';
+          numSpan.textContent = num;
+
+          const tag = document.createElement('span');
+          tag.className = 'sw-block-tag';
+          tag.textContent = typeLabel;
+
+          header.appendChild(numSpan);
+          header.appendChild(tag);
+
+          if (para.type === 'story_citation' && para.statementid) {
+            const stmt = (NodelManager.statements || []).find(function (s) { return s.id === para.statementid; });
+            if (stmt) {
+              const info = document.createElement('span');
+              info.className = 'sw-block-stmt-info';
+              info.textContent = _getNodeName(stmt.sourcenodeid) + ' → ' + _getNodeName(stmt.targetnodeid);
+              header.appendChild(info);
+            }
+          } else if (editable) {
+            const editBtn = document.createElement('button');
+            editBtn.className = 'sw-edit-btn';
+            editBtn.textContent = '✎ éditer';
+            editBtn.addEventListener('click', function (e) { e.stopPropagation(); _toggleEditArea(el); });
+            header.appendChild(editBtn);
+          }
+
+          el.appendChild(header);
+
+          // Body
+          const body = document.createElement('div');
+          body.className = 'sw-block-body';
+
+          (para.sentences || []).forEach(function (ss) {
+            const p = document.createElement('p');
+            p.style.marginBottom = '4px';
+            p.textContent = (para.type === 'story_citation' ? ss.source_text : ss.text) || '';
+            body.appendChild(p);
+          });
+
+          if (para.type === 'story_citation' && !para.paragraphid && (para.sentences || []).length > 1) {
+            const badge = document.createElement('span');
+            badge.style.cssText = 'font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:4px;display:block;';
+            badge.textContent = '↕ cross-paragraphe';
+            body.appendChild(badge);
+          }
+
+          // Zone d'édition inline (intro/transition seulement)
+          if (editable) {
+            const editArea = document.createElement('div');
+            editArea.className = 'sw-edit-area';
+
+            const fullText = (para.sentences || []).map(function (ss) { return ss.text || ''; }).filter(Boolean).join('\n');
+            const ta = document.createElement('textarea');
+            ta.className = 'sw-edit-ta';
+            ta.value = fullText;
+
+            const acts = document.createElement('div');
+            acts.className = 'sw-edit-actions';
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'sw-btn sw-btn-ghost';
+            cancelBtn.style.fontSize = '11px';
+            cancelBtn.textContent = 'Annuler';
+            cancelBtn.addEventListener('click', function () { editArea.classList.remove('visible'); });
+
+            const okBtn = document.createElement('button');
+            okBtn.className = 'sw-btn sw-btn-primary';
+            okBtn.style.fontSize = '11px';
+            okBtn.textContent = '✓ Valider';
+            (function (p, t, ea, bd) {
+              okBtn.addEventListener('click', function () { _saveBlockEdit(p, t.value, ea, bd); });
+            })(para, ta, editArea, body);
+
+            acts.appendChild(cancelBtn);
+            acts.appendChild(okBtn);
+            editArea.appendChild(ta);
+            editArea.appendChild(acts);
+            body.appendChild(editArea);
+          }
+
+          el.appendChild(body);
+          return el;
+        }
+
+        function _toggleEditArea(el) {
+          const area = el.querySelector('.sw-edit-area');
+          if (area) area.classList.toggle('visible');
+        }
+
+        async function _saveBlockEdit(para, newText, editArea, bodyEl) {
+          const sentences = (para.sentences || []).filter(function (ss) { return ss.type !== 'story_citation'; });
+          if (!sentences.length) return;
+
+          const lines = newText.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+
+          try {
+            for (let i = 0; i < sentences.length; i++) {
+              const ss = sentences[i];
+              const txt = (lines[i] !== undefined ? lines[i] : null) || (lines[0] || '');
+              const res = await _rpc('update_story_sentence_text', { p_id: ss.id, p_text: txt });
+              if (res && res.error) throw new Error(res.error_code);
+              ss.text = txt;
+            }
+
+            // Mettre à jour les <p> correspondants dans le body
+            const ps = Array.from(bodyEl.querySelectorAll('p'));
+            sentences.forEach(function (ss, i) { if (ps[i]) ps[i].textContent = ss.text; });
+
+            editArea.classList.remove('visible');
+            _isDirty = true;
+            _refreshSaveBtn('narrative');
+            showStatus('Bloc mis à jour.', 'success');
+          } catch (e) {
+            showStatus('Erreur sauvegarde : ' + e.message, 'error');
+          }
+        }
+
+        /* ── Drag-and-drop ── */
+        function _initDragDrop() {
+          const blocks = Array.from(elBlocks.querySelectorAll('.sw-block'));
+          blocks.forEach(function (b) {
+            b.addEventListener('dragstart', function (e) {
+              _dragSrc = b;
+              e.dataTransfer.effectAllowed = 'move';
+            });
+            b.addEventListener('dragover', function (e) {
+              e.preventDefault();
+              blocks.forEach(function (x) { x.classList.remove('drag-over'); });
+              b.classList.add('drag-over');
+            });
+            b.addEventListener('dragleave', function () { b.classList.remove('drag-over'); });
+            b.addEventListener('drop', function (e) {
+              e.preventDefault();
+              blocks.forEach(function (x) { x.classList.remove('drag-over'); });
+              if (!_dragSrc || _dragSrc === b) return;
+              const all = Array.from(elBlocks.querySelectorAll('.sw-block'));
+              const si = all.indexOf(_dragSrc);
+              const ti = all.indexOf(b);
+              elBlocks.insertBefore(_dragSrc, si < ti ? b.nextSibling : b);
+              Array.from(elBlocks.querySelectorAll('.sw-block')).forEach(function (bl, i) {
+                const n = bl.querySelector('.sw-block-header span:first-child');
+                if (n) n.textContent = i + 1;
+              });
+              _isDirty = true;
+              _refreshSaveBtn('narrative');
+            });
+            b.addEventListener('dragend', function () {
+              _dragSrc = null;
+              blocks.forEach(function (x) { x.classList.remove('drag-over'); });
+            });
+          });
+        }
+
+        /* ── Save order ── */
+        window.swSaveNarrative = async function () {
+          const order = Array.from(elBlocks.querySelectorAll('.sw-block')).map(function (b) { return b.dataset.id; });
+          if (!order.length) return;
+          try {
+            setLoading(true, 'Sauvegarde de l\'ordre…');
+            const res = await _rpc('reorder_story_paragraphs', { p_story_id: _storyId, p_order: order });
+            if (res && res.error) throw new Error(res.error_code);
+            _isDirty = false;
+            _refreshSaveBtn('narrative');
+            showStatus('Ordre sauvegardé.', 'success');
+          } catch (e) {
+            showStatus('Erreur : ' + e.message, 'error');
+          }
+          setLoading(false);
+        };
+
+      })();
+  </script>
 </body>
+
 </html>
