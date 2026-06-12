@@ -33,7 +33,7 @@
       --g-hub-stroke: #3A3732;
     }
 
-[data-theme="dark"] {
+    [data-theme="dark"] {
       --bg: #0E0E0E;
       --g-edge: rgba(245, 242, 236, 0.42);
       --g-edge-dot: rgba(245, 242, 236, 0.18);
@@ -911,7 +911,7 @@
       if (hash.get('type') === 'recovery') location.replace('/recovery.html' + location.hash);
     })();
   </script>
-  <script>document.write('<script src="' + (location.hostname === 'localhost' ? 'http://localhost:3000/js/tools/nl.js' : 'https://nodlangue.com/dist/nl.min.js') + '"><\/script>')</script>
+  <script>document.write('<script src="' + (location.hostname === 'localhost' ? 'http://localhost:3000/js/tools/nl.js' : 'https://nodlangue.onrender.com/dist/nl.min.js') + '"><\/script>')</script>
   <script>
     const myCards = document.getElementById('myCards');
     const cnThemeBtn = document.getElementById('cnThemeBtn');
@@ -1584,7 +1584,7 @@
     // ── Bootstrap ─────────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
       const isProd = location.hostname !== 'localhost';
-      Nl.initialize({ environment: isProd ? 'prod' : 'dev', baseUrl: isProd ? 'https://nodlangue.com/' : undefined });
+      Nl.initialize({ environment: isProd ? 'prod' : 'dev', baseUrl: isProd ? 'https://nodlangue.onrender.com/' : undefined });
     });
 
     // ── NodelManager init ─────────────────────────────────────────────────────
@@ -1794,7 +1794,7 @@
       const { fromId, toId } = e.detail;
       const stmts = (NodelManager.statements || []).filter(s =>
         (s.sourcenodeid === fromId && s.targetnodeid === toId) ||
-        (s.sourcenodeid === toId   && s.targetnodeid === fromId)
+        (s.sourcenodeid === toId && s.targetnodeid === fromId)
       );
       if (!stmts.length) return;
       if (stmts.length > 1) {

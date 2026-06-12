@@ -7,7 +7,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const patreonRouter = require('./routes/patreon.js');
-const ogRouter      = require('./routes/og.js');
+const ogRouter = require('./routes/og.js');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -24,6 +24,7 @@ const ALLOWED = [
     'https://nodel.ai',
     'https://nodeled.com',
     'https://nodlangue.com',
+    'https://nodlangue.onrender.com/',
     'https://temurah.com',
 ];
 
