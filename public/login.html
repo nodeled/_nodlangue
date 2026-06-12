@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>Cutup.news — Connexion</title>
+  <title>NØDLANGUE — Connexion</title>
   <link rel="icon" href="/icon.png" type="image/png">
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -161,7 +161,7 @@
 <body>
 
   <header>
-    <a class="logo" href="/">CUTUP<em>.</em>NEWS</a>
+    <a class="logo" href="/">NØDLANGUE</a>
   </header>
 
   <main>
@@ -187,7 +187,7 @@
   </main>
 
   <!-- nl.js — dev localhost:3000, prod nodeled.com/dist -->
-  <script>document.write('<script src="' + (location.hostname === 'localhost' ? 'http://localhost:3000/js/tools/nl.js' : 'https://cutup.news/dist/nl.min.js') + '"><\/script>')</script>
+  <script>document.write('<script src="' + (location.hostname === 'localhost' ? 'http://localhost:3000/js/tools/nl.js' : 'https://nodlangue.com/dist/nl.min.js') + '"><\/script>')</script>
 
   <script>
     // ── URL params ───────────────────────────────────────────────────────────────
@@ -206,13 +206,13 @@
     // ── Initialisation nodeled ────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
       const isProd = location.hostname !== 'localhost';
-      Nl.initialize({ environment: isProd ? 'prod' : 'dev', baseUrl: isProd ? 'https://cutup.news/' : undefined });
+      Nl.initialize({ environment: isProd ? 'prod' : 'dev', baseUrl: isProd ? 'https://nodlangue.com/' : undefined });
     });
 
     document.addEventListener('nl-manager-ready', () => {
       NodelManager.start({ dataEnv: 'dev' });
       // L'auth Patreon est sur cutup (port 2000), pas nodel (port 3000)
-      NodelManager.nodelApiUrl = location.hostname === 'localhost' ? 'http://localhost:1000' : 'https://cutup.news';
+      NodelManager.nodelApiUrl = location.hostname === 'localhost' ? 'http://localhost:4000' : 'https://nodlangue.com';
 
       renderSbStatus(NodelManager.session);
       NodelManager.onSessionEvents.push((action, session) => {
