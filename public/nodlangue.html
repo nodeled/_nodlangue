@@ -1618,17 +1618,7 @@
 
       NodelManager.onStatementEvents.push((action, statement) => {
         if (action !== 'setCurrentStatement' || !statement) return;
-        const found = [...document.querySelectorAll('nl-statement-card')]
-          .find(c => c._item?.id === statement.id);
-        if (found) { found._openCommentModal(true); return; }
-        const tmp = document.createElement('nl-statement-card');
-        tmp.style.cssText = 'position:fixed;left:-9999px;visibility:hidden;';
-        document.body.appendChild(tmp);
-        tmp.item = statement;
-        requestAnimationFrame(() => {
-          tmp._openCommentModal(true);
-          document.addEventListener('cn-statement-modal-close', () => tmp.remove(), { once: true });
-        });
+        NodelManager.openStatementModal(statement);
       });
 
       NodelManager.onNodeEvents.push((action, param) => {
@@ -1680,20 +1670,7 @@
         const nodeIds = [sourcenodeid, targetnodeid].filter(Boolean);
 
         const _activate = () => {
-          const _openModal = () => {
-            const found = [...document.querySelectorAll('nl-statement-card')]
-              .find(c => c._item?.id === id);
-            if (found) { found._openCommentModal(true); return; }
-            // Fallback : card temporaire si le statement n'apparaît pas dans le feed
-            const tmp = document.createElement('nl-statement-card');
-            tmp.style.cssText = 'position:fixed;left:-9999px;visibility:hidden;';
-            document.body.appendChild(tmp);
-            tmp.item = NodelManager.buildStatementItem(stmt) || stmt;
-            requestAnimationFrame(() => {
-              tmp._openCommentModal(true);
-              document.addEventListener('cn-statement-modal-close', () => tmp.remove(), { once: true });
-            });
-          };
+          const _openModal = () => NodelManager.openStatementModal(stmt);
 
           // Écouter loadFeedStatements (pas loadItemsFromNodesSummary)
           const _handler = (action) => {
@@ -1780,14 +1757,7 @@
         return;
       }
 
-      const tmp = document.createElement('nl-statement-card');
-      tmp.style.cssText = 'position:fixed;left:-9999px;visibility:hidden;';
-      document.body.appendChild(tmp);
-      tmp.item = NodelManager.buildStatementItem(stmts[0]) || stmts[0];
-      requestAnimationFrame(() => {
-        tmp._openCommentModal(true);
-        document.addEventListener('cn-statement-modal-close', () => tmp.remove(), { once: true });
-      });
+      NodelManager.openStatementModal(stmts[0]);
     });
 
     cnStoryGraph?.addEventListener('nl-graph-link-navigate', (e) => {
@@ -1802,14 +1772,7 @@
         NodelManager.setCurrentNode(fromId);
         return;
       }
-      const tmp = document.createElement('nl-statement-card');
-      tmp.style.cssText = 'position:fixed;left:-9999px;visibility:hidden;';
-      document.body.appendChild(tmp);
-      tmp.item = NodelManager.buildStatementItem(stmts[0]) || stmts[0];
-      requestAnimationFrame(() => {
-        tmp._openCommentModal(true);
-        document.addEventListener('cn-statement-modal-close', () => tmp.remove(), { once: true });
-      });
+      NodelManager.openStatementModal(stmts[0]);
     });
 
     document.addEventListener('cn-statement-loupe', (e) => {
