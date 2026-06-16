@@ -62,7 +62,7 @@
     }
 
     body {
-      padding-top: 62px;
+      padding-top: 106px;
     }
 
     /* ── Mobile ── */
@@ -95,8 +95,6 @@
     }
 
     .cn-topbar-inner {
-      max-width: 1440px;
-      margin: 0 auto;
       padding: 14px 28px;
       display: flex;
       align-items: center;
@@ -235,60 +233,62 @@
     nl-sidebar { display: none !important; }
     .cn-cards-layout { grid-template-columns: 1fr !important; }
 
-    /* ── Search panel (dropdown depuis topbar) ── */
+    /* ── Sub-barre fixe (toujours visible sous le header) ── */
     .cn-search-panel {
       position: fixed;
       top: 62px;
       left: 0;
       right: 0;
-      z-index: 25;
+      z-index: 20;
+      height: 44px;
       background: var(--cn-paper, #f6f4ef);
       border-bottom: 1px solid var(--cn-rule-soft, rgba(26, 24, 20, .14));
-      box-shadow: 0 8px 32px rgba(0, 0, 0, .18);
-      padding: 16px 28px 20px;
-      transform: translateY(-110%);
-      opacity: 0;
-      pointer-events: none;
-      transition: transform .25s cubic-bezier(.4, 0, .2, 1), opacity .2s ease;
-    }
-
-    .cn-search-panel.is-open {
-      transform: translateY(0);
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .cn-search-panel nl-searchbar {
-      background: var(--cn-card-bg, #fffefb);
-      border: 1px solid var(--cn-rule-soft, rgba(26, 24, 20, .14));
-      border-radius: 8px;
-      box-shadow: 0 1px 2px rgba(26, 24, 20, .05);
-      --nsb-ink: var(--cn-ink, #1a1814);
-      --nsb-ink3: var(--cn-ink-3, #8a8478);
-      --nsb-bg: var(--cn-card-bg, #fffefb);
-      --nsb-paper2: var(--cn-paper-2, #efece4);
-      --nsb-rule: var(--cn-rule-soft, rgba(26, 24, 20, .14));
-      --nsb-accent: var(--cn-accent, #c8302e);
-    }
-
-    .cn-search-label {
       display: flex;
       align-items: center;
-      gap: 7px;
+    }
+
+    .cn-crumb {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 10px;
       font-family: "JetBrains Mono", monospace;
-      font-size: 10.5px;
-      letter-spacing: .16em;
-      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: .08em;
       color: var(--cn-ink-3, #8a8478);
-      margin-bottom: 10px;
+      overflow: hidden;
+      min-width: 0;
     }
-    .cn-search-label svg {
-      width: 13px; height: 13px;
-      stroke: currentColor; fill: none; stroke-width: 1.5; flex-shrink: 0;
+    .cn-crumb-node {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 220px;
     }
-    .cn-search-label[data-mode="folder"] .cn-search-icon { display: none; }
-    .cn-search-label[data-mode="folder"] .cn-folder-icon { display: block; }
-    .cn-folder-icon { display: none; }
+    .cn-crumb-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--cn-accent, #c8302e);
+      flex-shrink: 0;
+    }
+    .cn-crumb-sep { flex-shrink: 0; opacity: .35; }
+
+    .cn-search-panel nl-searchbar {
+      display: none;
+      flex: 1;
+      min-width: 0;
+      --nsb-ink: var(--cn-ink, #1a1814);
+      --nsb-ink3: var(--cn-ink-3, #8a8478);
+      --nsb-bg: transparent;
+      --nsb-paper2: var(--cn-paper-2, #efece4);
+      --nsb-rule: transparent;
+      --nsb-accent: var(--cn-accent, #c8302e);
+    }
+    .cn-search-panel.is-open nl-searchbar { display: block; }
+    .cn-search-panel.is-open .cn-crumb { display: none; }
 
     /* ── Document mode : pleine largeur, scrollbar au bord écran ── */
     body.doc-mode {
@@ -800,6 +800,11 @@
             <line x1="9.5" y1="9.5" x2="14" y2="14" />
           </svg>
         </button>
+        <a id="cnOffersBtn" class="cn-icon-btn" href="/nodlangue-offres.html" title="Rejoindre">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M8 2l1.5 3.5 3.8.5-2.7 2.8.6 3.7L8 10.8l-3.2 1.7.6-3.7L2.7 6l3.8-.5z"/>
+          </svg>
+        </a>
         <button id="cnProfileBtn" class="cn-icon-btn" title="Profil / Patreon">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
             <circle cx="8" cy="5.5" r="2.5" />
@@ -818,12 +823,12 @@
   <!-- Force le téléchargement du binaire Material Icons dès le chargement de la page -->
   <span class="material-icons" style="visibility:hidden;position:absolute;width:0;height:0;overflow:hidden">book</span>
 
-  <!-- ── Search panel (déclenché par icône loupe) ── -->
+  <!-- ── Sub-barre (fil d'ariane / recherche) ── -->
   <div id="cnSearchPanel" class="cn-search-panel">
-    <div id="cnSearchLabel" class="cn-search-label">
-      <svg class="cn-search-icon" viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4"/><line x1="9.5" y1="9.5" x2="14" y2="14"/></svg>
-      <svg class="cn-folder-icon" viewBox="0 0 16 16"><path d="M1.5 6V13H14V4H7L5.5 6H1.5z"/></svg>
-      <span class="cn-search-label-text">Recherche</span>
+    <div id="cnCrumb" class="cn-crumb">
+      <span id="cnCrumbPrimary" class="cn-crumb-node" style="display:none"><span class="cn-crumb-dot"></span><span class="cn-crumb-name"></span></span>
+      <span id="cnCrumbSep" class="cn-crumb-sep" style="display:none">→</span>
+      <span id="cnCrumbSecondary" class="cn-crumb-node" style="display:none"><span class="cn-crumb-dot"></span><span class="cn-crumb-name"></span></span>
     </div>
     <nl-searchbar id="mySearchbar" placeholder-filter="Filtrer nom, source, relation…"></nl-searchbar>
   </div>
@@ -927,6 +932,30 @@
     const cnStoryFlowArea = document.getElementById('cnStoryFlowArea');
     const cnStoryStatements = document.getElementById('cnStoryStatements');
 
+    // ── Fil d'ariane : reflète le node/dossier actif ──────────────────────────
+    function updateCrumb() {
+      const primaryEl = document.getElementById('cnCrumbPrimary');
+      const sepEl = document.getElementById('cnCrumbSep');
+      const secondaryEl = document.getElementById('cnCrumbSecondary');
+      if (!primaryEl) return;
+      const folderId = typeof NodelManager !== 'undefined' ? NodelManager._feedFolder : null;
+      if (folderId) {
+        const folder = (NodelManager.folders || []).find(f => f.id === folderId);
+        primaryEl.querySelector('.cn-crumb-name').textContent = folder?.name || 'Dossier';
+        primaryEl.style.display = '';
+        sepEl.style.display = 'none';
+        secondaryEl.style.display = 'none';
+        return;
+      }
+      const p = typeof NodelManager !== 'undefined' ? NodelManager.getPrimaryNode?.() : null;
+      const s = typeof NodelManager !== 'undefined' ? NodelManager.getSecondaryNode?.() : null;
+      primaryEl.querySelector('.cn-crumb-name').textContent = p?.name || '';
+      primaryEl.style.display = p ? '' : 'none';
+      sepEl.style.display = s ? '' : 'none';
+      secondaryEl.querySelector('.cn-crumb-name').textContent = s?.name || '';
+      secondaryEl.style.display = s ? '' : 'none';
+    }
+
     // ── Search panel toggle ────────────────────────────────────────────────────
     cnSearchBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1002,7 +1031,7 @@
       cnSearchBtn?.classList.remove('cn-active');
     }
 
-    cnGraphBtn?.addEventListener('click', () => { _closeSearch(); _setDocumentMode(false); _setGraphMode(true); history.pushState({ graphMode: true }, '', _buildPath('/explore')); });
+    cnGraphBtn?.addEventListener('click', () => { _closeSearch(); _setDocumentMode(false); if (_storyMode) _closeStory(); _setGraphMode(true); history.pushState({ graphMode: true }, '', _buildPath('/explore')); });
     cnPageBtn?.addEventListener('click', () => { _closeSearch(); _setFeedMode('statement'); history.pushState(null, '', '/'); });
     cnStoriesBtn?.addEventListener('click', () => { _closeSearch(); _setFeedMode('story'); history.pushState({ storiesTab: true }, '', '/stories'); });
 
@@ -1517,7 +1546,7 @@
       if (_storyMode) _closeStory();
       _folderMode = true;
       cnFolderPanel.classList.add('is-open');
-      cnFoldersBtn.classList.add('cn-active');
+      cnFoldersBtn?.classList.add('cn-active');
 
       const doRender = () => _renderFolderList();
       if (NodelManager.folders?.length || !NodelManager.loadFolders) {
@@ -1536,7 +1565,7 @@
     function _closeFolderPanel() {
       _folderMode = false;
       cnFolderPanel.classList.remove('is-open');
-      cnFoldersBtn.classList.remove('cn-active');
+      cnFoldersBtn?.classList.remove('cn-active');
       _currentFolder = null;
     }
 
@@ -1627,6 +1656,7 @@
         if (action === 'setPrimaryNode' || action === 'setSecondaryNode' ||
             action === 'swapPrimaryAnSecondaryNodes') {
           _syncUrl();
+          updateCrumb();
         }
         if (action === 'loadNodes') {
           const ids = (NodelManager.nodes || []).map(n => n.id).filter(id => !_slugCache[id]);

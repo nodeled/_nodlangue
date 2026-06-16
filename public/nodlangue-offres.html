@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NØDLANGUE — Rejoindre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red: #c8302e;
+  --black: #0c0b09;
+  --off-white: #f5f2ea;
+  --warm-gray: #e8e3d6;
+  --mid-gray: #918d82;
+  --dark-gray: #3a3630;
+  --ink: #1a1814;
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  background: var(--off-white);
+  color: var(--ink);
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-weight: 300;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ───────────────────────────────────────────────── */
+.nl-bar {
+  position: sticky;
+  top: 0;
+  left: 0; right: 0;
+  z-index: 100;
+  background: var(--black);
+  border-bottom: 2px solid var(--red);
+  height: 60px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+}
+
+.nl-brand {
+  font-family: 'Bangers', sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: .08em;
+  color: #f5f2ea;
+  line-height: 1;
+  text-shadow: 1px 1px 0 rgba(200,48,46,.4);
+  text-decoration: none;
+}
+a.nl-brand:hover { opacity: .8; }
+
+.nl-back {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--red);
+  text-decoration: none;
+  border: 1px solid var(--red);
+  padding: 6px 14px;
+  white-space: nowrap;
+  transition: background .15s, color .15s;
+}
+.nl-back:hover { background: var(--red); color: #f5f2ea; }
+
+/* ── HERO ──────────────────────────────────────────────────── */
+.hero {
+  background: var(--black);
+  min-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6rem 3rem 5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.hero-bg-word {
+  font-family: 'Bangers', sans-serif;
+  font-size: 26vw;
+  line-height: 0.85;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,0.028);
+  user-select: none;
+  transform: translateX(6%);
+  letter-spacing: .05em;
+}
+
+.hero-content { position: relative; z-index: 1; max-width: 860px; }
+
+.hero-kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  opacity: 0;
+  animation: rise 0.7s 0.1s ease forwards;
+}
+.hero-kicker::before {
+  content: '';
+  display: block;
+  width: 2.5rem;
+  height: 1px;
+  background: var(--red);
+}
+
+.hero h1 {
+  font-family: 'Bangers', sans-serif;
+  font-size: clamp(3.5rem, 8.5vw, 7.5rem);
+  color: #fff;
+  line-height: 0.9;
+  letter-spacing: 0.04em;
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  animation: rise 0.7s 0.2s ease forwards;
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: var(--red);
+}
+
+.hero h1 .serif {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-style: italic;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.72em;
+  font-weight: 300;
+}
+
+.hero-body {
+  max-width: 54ch;
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.9;
+  margin-bottom: 3rem;
+  opacity: 0;
+  animation: rise 0.7s 0.35s ease forwards;
+}
+
+.hero-body strong {
+  color: rgba(255,255,255,0.82);
+  font-weight: 400;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  opacity: 0;
+  animation: rise 0.7s 0.5s ease forwards;
+}
+
+.btn-primary {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  background: var(--red);
+  color: #fff;
+  padding: 0.85rem 2rem;
+  text-decoration: none;
+  border: 2px solid var(--red);
+  transition: background 0.2s, color 0.2s;
+}
+.btn-primary:hover { background: transparent; color: var(--red); }
+
+.btn-ghost {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.3);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.btn-ghost:hover { color: rgba(255,255,255,0.65); }
+
+/* ── PROOF BAR ─────────────────────────────────────────────── */
+.proof-bar {
+  background: var(--red);
+  padding: 1rem 3rem;
+  display: flex;
+  gap: 3rem;
+  align-items: center;
+  overflow: hidden;
+}
+
+.proof-item { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; white-space: nowrap; }
+
+.proof-num {
+  font-family: 'Bangers', sans-serif;
+  font-size: 1.5rem;
+  color: #fff;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.proof-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  color: rgba(255,255,255,0.62);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  line-height: 1.45;
+}
+
+/* ── SECTIONS ──────────────────────────────────────────────── */
+section { position: relative; }
+
+.section-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 5.5rem 3rem;
+}
+
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.eyebrow::before {
+  content: '';
+  display: block;
+  width: 1.5rem;
+  height: 1px;
+  background: var(--red);
+}
+
+.section-h {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+}
+
+.section-sub {
+  font-size: 1rem;
+  color: var(--mid-gray);
+  max-width: 52ch;
+  line-height: 1.85;
+}
+
+/* ── STEPS ─────────────────────────────────────────────────── */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-top: 3.5rem;
+  border: 1px solid var(--warm-gray);
+}
+
+.step {
+  padding: 2.5rem 2rem;
+  border-right: 1px solid var(--warm-gray);
+  position: relative;
+}
+.step:last-child { border-right: none; }
+
+.step-num {
+  font-family: 'Bangers', sans-serif;
+  font-size: 4rem;
+  color: var(--warm-gray);
+  line-height: 1;
+  margin-bottom: 1rem;
+  letter-spacing: .04em;
+}
+
+.step-title {
+  font-family: 'Bangers', sans-serif;
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  margin-bottom: 0.6rem;
+}
+
+.step-desc {
+  font-size: 0.92rem;
+  color: var(--mid-gray);
+  line-height: 1.8;
+}
+
+.step-pill {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.52rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  background: var(--warm-gray);
+  color: var(--dark-gray);
+  padding: 0.25rem 0.6rem;
+  margin-top: 1rem;
+}
+
+/* ── TIERS ─────────────────────────────────────────────────── */
+.tiers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 3.5rem;
+}
+
+.tier-card {
+  background: #fff;
+  border: 1px solid var(--warm-gray);
+  padding: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.tier-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.07);
+}
+
+.tier-card.star { border-color: var(--red); border-width: 2px; }
+
+.tier-banner {
+  background: var(--red);
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  text-align: center;
+  padding: 0.45rem;
+}
+
+.tier-body {
+  padding: 2rem 1.75rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tier-icon {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--warm-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.tier-icon svg {
+  width: 18px; height: 18px;
+  stroke: var(--red); fill: none;
+  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.tier-name {
+  font-family: 'Bangers', sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  margin-bottom: 0.2rem;
+}
+
+.tier-tagline {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-style: italic;
+  font-size: 0.92rem;
+  color: var(--mid-gray);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.tier-price-block { margin-bottom: 1.75rem; }
+
+.tier-price { display: flex; align-items: baseline; gap: 0.2rem; }
+
+.price-big {
+  font-family: 'Bangers', sans-serif;
+  font-size: 2.8rem;
+  color: var(--ink);
+  line-height: 1;
+  letter-spacing: .04em;
+}
+
+.price-sym {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--mid-gray);
+  align-self: flex-start;
+  margin-top: 0.4rem;
+}
+
+.price-per {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--mid-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 0.2rem;
+}
+
+.tier-divider { height: 1px; background: var(--warm-gray); margin-bottom: 1.5rem; }
+
+.tier-features {
+  list-style: none;
+  font-size: 0.88rem;
+  color: var(--dark-gray);
+  flex: 1;
+}
+
+.tier-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--warm-gray);
+  line-height: 1.45;
+}
+.tier-features li:last-child { border-bottom: none; }
+
+.feat-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+  flex-shrink: 0;
+  margin-top: 0.45rem;
+}
+.feat-dot.off { background: var(--warm-gray); }
+
+.feat-text { color: var(--dark-gray); }
+.feat-text.muted { color: var(--mid-gray); text-decoration: line-through; }
+
+.tier-cta {
+  margin-top: 1.75rem;
+  display: block;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding: 0.85rem;
+  text-decoration: none;
+  border: 1px solid var(--warm-gray);
+  color: var(--dark-gray);
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.tier-cta:hover { border-color: var(--red); color: var(--red); }
+.tier-cta.primary {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+.tier-cta.primary:hover { background: var(--black); border-color: var(--black); }
+
+/* ── FREE BAND ─────────────────────────────────────────────── */
+.free-band {
+  background: var(--black);
+  padding: 3rem;
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.free-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--mid-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.5rem;
+}
+
+.free-title {
+  font-family: 'Bangers', sans-serif;
+  font-size: 1.9rem;
+  color: #fff;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
+}
+
+.free-desc {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.38);
+  max-width: 44ch;
+  line-height: 1.75;
+}
+
+.free-features { display: flex; gap: 2rem; flex-wrap: wrap; }
+
+.free-feat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.32);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.free-feat::before { content: '✓'; color: var(--red); }
+
+.free-cta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.45);
+  padding: 0.85rem 2rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+.free-cta:hover { border-color: rgba(255,255,255,0.38); color: #fff; }
+
+/* ── WHY ───────────────────────────────────────────────────── */
+.why { background: var(--warm-gray); }
+
+.why-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  margin-top: 3.5rem;
+}
+
+.why-quote {
+  border-left: 3px solid var(--red);
+  padding-left: 2rem;
+}
+
+.why-quote blockquote {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-style: italic;
+  font-size: 1.45rem;
+  font-weight: 300;
+  color: var(--ink);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+.why-quote cite {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--mid-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-style: normal;
+}
+
+.why-list { list-style: none; display: flex; flex-direction: column; gap: 1.5rem; }
+
+.why-item { display: flex; gap: 1.25rem; align-items: flex-start; }
+
+.why-num {
+  font-family: 'Bangers', sans-serif;
+  font-size: 1.4rem;
+  color: var(--red);
+  line-height: 1;
+  flex-shrink: 0;
+  width: 2rem;
+}
+
+.why-item-title { font-size: 0.95rem; font-weight: 500; color: var(--ink); margin-bottom: 0.25rem; }
+
+.why-item-desc { font-size: 0.88rem; color: var(--mid-gray); line-height: 1.75; }
+
+/* ── FAQ ───────────────────────────────────────────────────── */
+.faq-list { margin-top: 3rem; border-top: 1px solid var(--warm-gray); }
+
+.faq-item { border-bottom: 1px solid var(--warm-gray); }
+
+.faq-q {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 1.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--ink);
+  gap: 1rem;
+}
+
+.faq-arrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  color: var(--mid-gray);
+  flex-shrink: 0;
+  transition: transform 0.25s;
+}
+.faq-item.open .faq-arrow { transform: rotate(90deg); }
+
+.faq-a {
+  font-size: 0.92rem;
+  color: var(--mid-gray);
+  line-height: 1.85;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, padding 0.25s;
+}
+.faq-item.open .faq-a { max-height: 300px; padding-bottom: 1.5rem; }
+
+/* ── CTA FINAL ─────────────────────────────────────────────── */
+.cta-final {
+  background: var(--black);
+  text-align: center;
+  padding: 7rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-bg-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Bangers', sans-serif;
+  font-size: 20vw;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,0.025);
+  pointer-events: none;
+  white-space: nowrap;
+  user-select: none;
+  letter-spacing: .06em;
+}
+
+.cta-final .eyebrow { justify-content: center; }
+.cta-final .eyebrow::before { display: none; }
+
+.cta-h {
+  font-family: 'Bangers', sans-serif;
+  font-size: clamp(3rem, 7vw, 6rem);
+  color: #fff;
+  line-height: 0.9;
+  margin: 1rem 0 1.5rem;
+  letter-spacing: 0.04em;
+}
+
+.cta-h em { font-style: normal; color: var(--red); }
+
+.cta-sub {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.38);
+  max-width: 48ch;
+  margin: 0 auto 2.5rem;
+  line-height: 1.8;
+}
+
+.cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* ── FOOTER ────────────────────────────────────────────────── */
+footer {
+  background: var(--black);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 1.75rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-brand {
+  font-family: 'Bangers', sans-serif;
+  font-size: 1.2rem;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: .08em;
+  text-decoration: none;
+}
+
+.footer-links { display: flex; gap: 2rem; }
+
+.footer-links a {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  color: rgba(255,255,255,0.22);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: rgba(255,255,255,0.55); }
+
+/* ── ANIMATIONS ────────────────────────────────────────────── */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 860px) {
+  .nl-bar { padding: 0 16px; }
+  .hero { padding: 4rem 1.5rem 3rem; min-height: auto; }
+  .section-inner { padding: 3.5rem 1.5rem; }
+  .steps { grid-template-columns: 1fr; }
+  .step { border-right: none; border-bottom: 1px solid var(--warm-gray); }
+  .step:last-child { border-bottom: none; }
+  .tiers-grid { grid-template-columns: 1fr; }
+  .why-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .free-band { flex-direction: column; align-items: flex-start; }
+  .proof-bar { gap: 1.5rem; }
+  footer { flex-direction: column; gap: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="nl-bar">
+  <a class="nl-brand" href="/">NØDLANGUE</a>
+  <a class="nl-back" href="/">← Retour</a>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg">
+    <div class="hero-bg-word">GRAPHE</div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-kicker">Cartographie du réel — Information alternative</div>
+    <h1>Les connexions <em>interdites.</em> <span class="serif">Cartographiées.</span></h1>
+    <p class="hero-body">
+      NØDLANGUE cartographie ce que la médiasphère mainstream ne relie jamais.
+      Des <strong>sources primaires aux archives déclassifiées</strong>, des médias alternatifs aux témoins directs —
+      chaque acteur, chaque doctrine, chaque événement trouve sa place dans un <strong>graphe navigable des connexions cachées.</strong>
+    </p>
+    <div class="hero-actions">
+      <a href="#offres" class="btn-primary">Voir les offres</a>
+      <a href="#methode" class="btn-ghost">Comment ça fonctionne →</a>
+    </div>
+  </div>
+</div>
+
+<!-- PROOF BAR -->
+<div class="proof-bar">
+  <div class="proof-item">
+    <div>
+      <div class="proof-num">100%</div>
+      <div class="proof-label">Indépendant<br>zéro régie</div>
+    </div>
+  </div>
+  <div class="proof-item">
+    <div>
+      <div class="proof-num">Sources</div>
+      <div class="proof-label">Primaires, archives<br>toujours vérifiables</div>
+    </div>
+  </div>
+  <div class="proof-item">
+    <div>
+      <div class="proof-num">Graphe</div>
+      <div class="proof-label">Connexions cachées<br>visualisées</div>
+    </div>
+  </div>
+  <div class="proof-item">
+    <div>
+      <div class="proof-num">Patreon</div>
+      <div class="proof-label">Communauté<br>de veilleurs</div>
+    </div>
+  </div>
+</div>
+
+<!-- METHODE -->
+<section id="methode">
+  <div class="section-inner">
+    <div class="eyebrow">La méthode</div>
+    <h2 class="section-h">Trois gestes. Un graphe du réel.</h2>
+    <p class="section-sub">Pas d'opinion non sourcée. Pas de récit imposé. Seulement des connexions documentées.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Identifier</div>
+        <p class="step-desc">Presse alternative, archives nationales et étrangères, documents déclassifiés, témoins directs. Là où la médiasphère officielle s'arrête, NØDLANGUE commence.</p>
+        <div class="step-pill">Sources toujours visibles</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Cartographier</div>
+        <p class="step-desc">Chaque statement est ancré dans un réseau d'acteurs, de doctrines, d'organisations et d'événements. Le graphe révèle la structure que le flux médiatique dissimule.</p>
+        <div class="step-pill">Graphe des connexions</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Transmettre</div>
+        <p class="step-desc">Les membres les plus engagés assemblent leurs propres récits à partir des statements disponibles. L'investigation devient un acte collectif et transmissible.</p>
+        <div class="step-pill">Réservé aux Archivistes</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OFFRES -->
+<section id="offres" style="background: var(--warm-gray);">
+  <div class="section-inner">
+    <div class="eyebrow">Les offres</div>
+    <h2 class="section-h">Choisissez votre rôle.</h2>
+    <p class="section-sub">Trois niveaux d'engagement. Le niveau gratuit existe — et il est réel.</p>
+
+    <div class="tiers-grid">
+
+      <!-- VEILLEUR -->
+      <div class="tier-card">
+        <div class="tier-body">
+          <div class="tier-icon">
+            <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <div class="tier-name">Veilleur</div>
+          <p class="tier-tagline">Je rejoins la communauté. Je lis les sources.</p>
+          <div class="tier-price-block">
+            <div class="tier-price">
+              <span class="price-big">0</span>
+              <span class="price-sym">€</span>
+            </div>
+            <div class="price-per">Patreon — inscription gratuite</div>
+          </div>
+          <div class="tier-divider"></div>
+          <ul class="tier-features">
+            <li><span class="feat-dot"></span><span class="feat-text">Lire tous les statements</span></li>
+            <li><span class="feat-dot"></span><span class="feat-text">Sources toujours visibles</span></li>
+            <li><span class="feat-dot"></span><span class="feat-text">Mini-graphe narratif</span></li>
+            <li><span class="feat-dot"></span><span class="feat-text">Liker les statements</span></li>
+            <li><span class="feat-dot"></span><span class="feat-text">Partager</span></li>
+            <li><span class="feat-dot off"></span><span class="feat-text muted">Commenter</span></li>
+          </ul>
+          <a href="#" class="tier-cta">Créer un compte gratuit →</a>
+        </div>
+      </div>
+
+      <!-- SENTINELLE -->
+      <div class="tier-card star">
+        <div class="tier-banner">Recommandé</div>
+        <div class="tier-body">
+          <div class="tier-icon">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+          </div>
+          <div class="tier-name">Sentinelle</div>
+          <p class="tier-tagline">Je creuse les connexions. Je construis ma propre carte du réel.</p>
+          <div class="tier-price-block">
+            <div class="tier-price">
+              <span class="price-sym">€</span>
+              <span class="price-big">5</span>
+            </div>
+            <div class="price-per">par mois via Patreon</div>
+          </div>
+          <div class="tier-divider"></div>
+          <ul class="tier-features">
+            <li><span class="feat-dot"></span><span class="feat-text">Tout du niveau Veilleur</span></li>
+            <li><span class="feat-dot"></span><span class="feat-text">Commenter les statements</span></li>
+            <li><span class="feat-dot"></span><span class="feat-text">Grand graphe navigable complet</span></li>
+            <li><span class="feat-dot"></span><span class="feat-text">Recherche full-text</span></li>
+            <li><span class="feat-dot"></span><span class="feat-text">Listes & signets</span></li>
+            <li><span class="feat-dot off"></span><span class="feat-text muted">Créer des stories</span></li>
+          </ul>
+          <a href="#" class="tier-cta primary">Devenir Sentinelle →</a>
+        </div>
+      </div>
+
+      <!-- ARCHIVISTE -->
+      <div class="tier-card">
+        <div class="tier-body">
+          <div class="tier-icon">
+            <svg viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
+          </div>
+          <div class="tier-name">Archiviste</div>
+          <p class="tier-tagline">Je monte mes propres récits. Je deviens acteur de la transmission.</p>
+          <div class="tier-price-block">
+            <div class="tier-price">
+              <span class="price-sym">€</span>
+              <span class="price-big">12</span>
+            </div>
+            <div class="price-per">par mois via Patreon</div>
+          </div>
+          <div class="tier-divider"></div>
+          <ul class="tier-features">
+            <li><span class="feat-dot"></span><span class="feat-text">Tout du niveau Sentinelle</span></li>
+            <li><span class="feat-dot"></span><span class="feat-text">Créer des stories</span></li>
+            <li><span class="feat-dot"></span><span class="feat-text">Publier & diffuser</span></li>
+            <li><span class="feat-dot"></span><span class="feat-text">Accès prioritaire aux nouveautés</span></li>
+          </ul>
+          <a href="#" class="tier-cta">Devenir Archiviste →</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ANONYME BAND -->
+    <div class="free-band">
+      <div>
+        <div class="free-tag">Sans inscription</div>
+        <div class="free-title">Anonyme — toujours gratuit</div>
+        <p class="free-desc">Pas de compte, pas d'email. Vous pouvez lire, consulter les sources et partager librement. Aucune trace.</p>
+      </div>
+      <div class="free-features">
+        <div class="free-feat">Lire les statements</div>
+        <div class="free-feat">Voir les sources</div>
+        <div class="free-feat">Mini-graphe narratif</div>
+        <div class="free-feat">Partager</div>
+      </div>
+      <a href="/" class="free-cta">Accéder sans compte</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- WHY -->
+<section class="why">
+  <div class="section-inner">
+    <div class="eyebrow">Pourquoi NØDLANGUE</div>
+    <h2 class="section-h">L'information alternative existe. <br>La structure qui la relie, non.</h2>
+
+    <div class="why-grid">
+      <div class="why-quote">
+        <blockquote>
+          "Les grands événements ne sont pas des accidents. Ce sont des nœuds dans un réseau de décisions, d'acteurs et de doctrines. NØDLANGUE le rend visible."
+        </blockquote>
+        <cite>— La méthode NØDLANGUE</cite>
+      </div>
+
+      <ul class="why-list">
+        <li class="why-item">
+          <div class="why-num">01</div>
+          <div>
+            <div class="why-item-title">Zéro publicité, zéro agenda</div>
+            <p class="why-item-desc">Financé uniquement par la communauté via Patreon. Aucune régie, aucun actionnaire, aucune ligne politique imposée. Personne ne paie pour apparaître dans nos graphes.</p>
+          </div>
+        </li>
+        <li class="why-item">
+          <div class="why-num">02</div>
+          <div>
+            <div class="why-item-title">Les sources primaires sont toujours là</div>
+            <p class="why-item-desc">Mainstream, alternatif, archives déclassifiées, témoignages directs — chaque statement cite sa source avec un lien. Vous pouvez tout vérifier, même sans compte.</p>
+          </div>
+        </li>
+        <li class="why-item">
+          <div class="why-num">03</div>
+          <div>
+            <div class="why-item-title">Le graphe comme méthode</div>
+            <p class="why-item-desc">Pas une liste d'articles. Un réseau navigable de connexions entre personnes, organisations, doctrines et événements — qui révèle la logique cachée derrière les faits.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section>
+  <div class="section-inner">
+    <div class="eyebrow">Questions fréquentes</div>
+    <h2 class="section-h">Ce qu'on nous demande.</h2>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q">
+          NØDLANGUE a-t-il une ligne politique ou éditoriale ?
+          <span class="faq-arrow">→</span>
+        </button>
+        <div class="faq-a">
+          Une méthode, pas une ligne. On cartographie des connexions depuis des sources vérifiables, on ne commente pas, on ne prend pas position. Vous avez accès aux mêmes sources que nous — c'est vous qui tirez les conclusions.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          D'où viennent les informations ?
+          <span class="faq-arrow">→</span>
+        </button>
+        <div class="faq-a">
+          De sources de tous bords : presse mainstream et alternative, archives nationales et étrangères, documents déclassifiés, témoignages directs. Chaque statement cite sa source avec un lien — visible par tous, même sans compte.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Quelle est la différence avec un site d'information alternatif classique ?
+          <span class="faq-arrow">→</span>
+        </button>
+        <div class="faq-a">
+          NØDLANGUE ne publie pas d'articles. Il cartographie des connexions. Chaque "statement" est une relation entre deux entités (personnes, organisations, concepts) — sourced, datée, reliée à toutes les autres. Le résultat est un graphe navigable, pas un flux de lectures.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Qu'est-ce qu'une "story" que peut créer un Archiviste ?
+          <span class="faq-arrow">→</span>
+        </button>
+        <div class="faq-a">
+          Une story est un montage de statements que vous assemblez pour construire un récit. Vous sélectionnez les connexions existantes, vous leur donnez un angle et un titre. C'est la même logique éditoriale que celle de l'équipe NØDLANGUE — appliquée à votre propre investigation.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Pourquoi Patreon plutôt qu'un abonnement direct ?
+          <span class="faq-arrow">→</span>
+        </button>
+        <div class="faq-a">
+          Patreon nous permet de construire une communauté, pas une base de clients. Vous existez en tant que membres. Et si vous arrêtez de payer, vous restez Veilleur gratuit — vous ne disparaissez pas, votre historique reste intact.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<div class="cta-final">
+  <div class="cta-bg-text">NØDLANGUE</div>
+  <div style="position: relative; z-index: 1;">
+    <div class="eyebrow">Rejoindre</div>
+    <h2 class="cta-h">Entrez dans <em>le graphe.</em></h2>
+    <p class="cta-sub">Gratuit pour lire. Quelques euros pour explorer. Une communauté pour ceux qui cherchent à comprendre la structure du réel.</p>
+    <div class="cta-btns">
+      <a href="#" class="btn-primary">Créer un compte gratuit</a>
+      <a href="#offres" class="btn-ghost" style="color: rgba(255,255,255,0.3);">Voir les offres payantes →</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <a href="/" class="footer-brand">NØDLANGUE</a>
+  <div class="footer-links">
+    <a href="#">Mentions légales</a>
+    <a href="#">Confidentialité</a>
+    <a href="#">Contact</a>
+    <a href="#">Patreon</a>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+</script>
+
+</body>
+</html>
