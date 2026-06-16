@@ -71,14 +71,6 @@
         display: none;
       }
 
-      #cnSidebarBtn {
-        display: none;
-      }
-
-      nl-sidebar {
-        display: none !important;
-      }
-
       .cn-topbar-inner {
         padding: 10px 12px;
         gap: 6px;
@@ -239,9 +231,8 @@
       display: block;
     }
 
-    /* ── Sidebar masquée (toujours cachée dans nodlangue) ── */
+    /* ── Éléments masqués dans nodlangue ── */
     nl-sidebar { display: none !important; }
-    #cnSidebarBtn { display: none !important; }
     .cn-cards-layout { grid-template-columns: 1fr !important; }
 
     /* ── Search panel (dropdown depuis topbar) ── */
@@ -803,30 +794,10 @@
             <path d="M5 3.5V2h8.5v10.5H12" />
           </svg>
         </button>
-        <button id="cnFoldersBtn" class="cn-icon-btn" title="Mes dossiers">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M1.5 6V13H14V4H7L5.5 6H1.5z" />
-          </svg>
-        </button>
-        <button id="cnDocBtn" class="cn-icon-btn" title="Mode document">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M4 1.5h5.5L12.5 4.5V14.5H4V1.5z" />
-            <path d="M9.5 1.5V4.5H12.5" />
-            <line x1="6" y1="7" x2="10.5" y2="7" />
-            <line x1="6" y1="9.5" x2="10.5" y2="9.5" />
-            <line x1="6" y1="12" x2="9" y2="12" />
-          </svg>
-        </button>
         <button id="cnSearchBtn" class="cn-icon-btn" title="Recherche">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
             <circle cx="6.5" cy="6.5" r="4" />
             <line x1="9.5" y1="9.5" x2="14" y2="14" />
-          </svg>
-        </button>
-        <button id="cnSidebarBtn" class="cn-icon-btn" title="Entités">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="1.5" y="1.5" width="13" height="13" rx="1.5" />
-            <line x1="10" y1="1.5" x2="10" y2="14.5" />
           </svg>
         </button>
         <button id="cnProfileBtn" class="cn-icon-btn" title="Profil / Patreon">
