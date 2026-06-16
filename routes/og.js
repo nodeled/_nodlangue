@@ -1,4 +1,4 @@
-// og.js — meta injection SEO + OG image pour /statement/:id
+// og.js — meta injection SEO + OG image pour NØDLANGUE
 
 const express  = require('express');
 const axios    = require('axios');
@@ -25,7 +25,6 @@ function svcHeaders() {
 
 async function fetchStatementData(id) {
     try {
-        // Statement
         const rs = await axios.get(
             `${storageBase()}/rest/v1/statements?id=eq.${id}&select=id,description_fr,name,sourcenodeid,targetnodeid,predicateid,publishedat&limit=1`,
             { headers: { ...svcHeaders(), 'Content-Type': 'application/json' }, timeout: 8000, validateStatus: () => true }
@@ -33,7 +32,6 @@ async function fetchStatementData(id) {
         if (rs.status !== 200 || !rs.data?.length) return null;
         const stmt = rs.data[0];
 
-        // Nodes source + cible
         const nodeIds = [stmt.sourcenodeid, stmt.targetnodeid].filter(Boolean);
         const rn = await axios.get(
             `${storageBase()}/rest/v1/nodes?id=in.(${nodeIds.join(',')})&select=id,name,type,picture`,
@@ -42,7 +40,6 @@ async function fetchStatementData(id) {
         const nodes = rn.status === 200 ? rn.data : [];
         const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
 
-        // Prédicat (description_fr = label du prédicat)
         let predLabel = stmt.name || '';
         if (stmt.predicateid) {
             const rp = await axios.get(
@@ -87,54 +84,147 @@ function injectMeta(html, { title, description, imageUrl, pageUrl }) {
   <meta name="twitter:title" content="${esc(title)}"/>
   <meta name="twitter:description" content="${esc(description)}"/>
   <meta name="twitter:image" content="${esc(imageUrl)}"/>`;
-    // Remplace le <title> existant et injecte après
     return html
         .replace(/<title>[^<]*<\/title>/, '')
         .replace('</head>', metas + '\n</head>');
 }
 
-// ─── Route : GET /statement/:id ───────────────────────────────────────────────
+// ─── Lookup slug numérique → UUID ────────────────────────────────────────────
 
-router.get('/statement/:id', async (req, res) => {
+async function fetchSlugData(shortId) {
+    try {
+        const r = await axios.get(
+            `${storageBase()}/rest/v1/slugs?id=eq.${encodeURIComponent(shortId)}&select=id,target_type,target_id&limit=1`,
+            { headers: { ...svcHeaders(), 'Content-Type': 'application/json' }, timeout: 5000, validateStatus: () => true }
+        );
+        if (r.status !== 200 || !r.data?.length) return null;
+        return r.data[0];
+    } catch (e) {
+        console.warn('[og] fetchSlugData error:', e.message);
+        return null;
+    }
+}
+
+// ─── Redirects anciens formats ───────────────────────────────────────────────
+
+router.get('/statement/:id',   (req, res) => res.redirect(301, `/${req.params.id}`));
+router.get('/statements/:id',  (req, res) => res.redirect(301, `/${req.params.id}`));
+
+// ─── Route : GET /explore* (graphe + nodes/folders) ─────────────────────────
+
+router.get(['/explore', '/explore/:slug', '/explore/:pair(\\d+-\\d+)', '/explore/folders/:slug'], (req, res) => {
+    const html = fs.readFileSync(NODLANGUE_HTML, 'utf8');
+    const title   = 'Explorer le graphe — NØDLANGUE';
+    const desc    = 'Explorez les connexions du knowledge graph NØDLANGUE';
+    const pageUrl = `${req.protocol}://${req.get('host')}${req.path}`;
+    const injected = injectMeta(html, { title, description: desc, imageUrl: '', pageUrl });
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(injected);
+});
+
+// ─── Route : GET /search/* (feed + nodes) ────────────────────────────────────
+
+router.get(['/search', '/search/:slug', '/search/:pair(\\d+-\\d+)'], (_req, res) => res.sendFile(NODLANGUE_HTML));
+
+// ─── Route : GET /folder/:slug (feed + dossier) ──────────────────────────────
+
+router.get('/folder/:slug', (_req, res) => res.sendFile(NODLANGUE_HTML));
+
+// ─── Route : GET /stories (liste) ────────────────────────────────────────────
+
+router.get('/stories', (_req, res) => {
+    const html = fs.readFileSync(NODLANGUE_HTML, 'utf8');
+    const title   = 'Stories — NØDLANGUE';
+    const desc    = 'Toutes les stories du knowledge graph NØDLANGUE';
+    const pageUrl = `${_req.protocol}://${_req.get('host')}/stories`;
+    const injected = injectMeta(html, { title, description: desc, imageUrl: '', pageUrl });
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(injected);
+});
+
+// ─── Route : GET /stories/:id ─────────────────────────────────────────────────
+
+router.get('/stories/:id', async (req, res) => {
     const { id } = req.params;
     const html = fs.readFileSync(NODLANGUE_HTML, 'utf8');
 
-    const data = await fetchStatementData(id);
-    if (!data) return res.send(html);  // fallback : page normale sans metas
+    try {
+        const r = await axios.get(
+            `${storageBase()}/rest/v1/story_covers?id=eq.${encodeURIComponent(id)}&select=id,name,description,picture,publishedat&limit=1`,
+            { headers: { ...svcHeaders(), 'Content-Type': 'application/json' }, timeout: 8000, validateStatus: () => true }
+        );
+        const cover = r.status === 200 && r.data?.length ? r.data[0] : null;
+        if (!cover) return res.send(html);
 
-    const srcName = data.sourceNode?.name || '';
-    const tgtName = data.targetNode?.name || '';
-    const title   = [srcName, data.predLabel, tgtName].filter(Boolean).join(' · ') + ' — NØDLANGUE';
-    const desc    = data.description || `${srcName} ${data.predLabel} ${tgtName}`.trim();
-    const pageUrl = `${req.protocol}://${req.get('host')}/statement/${id}`;
-    const imageUrl = statementImageUrl(id);
+        const title   = (cover.name || 'Story') + ' — NØDLANGUE';
+        const desc    = cover.description || 'Story — NØDLANGUE';
+        const pageUrl = `${req.protocol}://${req.get('host')}/stories/${id}`;
+        const imageUrl = cover.picture || '';
 
-    const injected = injectMeta(html, { title, description: desc, imageUrl, pageUrl });
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(injected);
-
-    // Génère l'image en arrière-plan si elle n'existe pas encore
-    imageExists(statementImagePath(id)).then(exists => {
-        if (!exists) {
-            generateStatementPicture({
-                statementId:  id,
-                sourceNode:   data.sourceNode,
-                targetNode:   data.targetNode,
-                predLabel:    data.predLabel,
-                description:  data.description,
-                publishedat:  data.publishedat,
-            }).catch(e => console.warn('[og] generateStatementPicture error:', e.message));
-        }
-    });
+        const injected = injectMeta(html, { title, description: desc, imageUrl, pageUrl });
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        return res.send(injected);
+    } catch (e) {
+        console.warn('[og] /stories/:id error:', e.message);
+        return res.send(html);
+    }
 });
 
-// ─── Route : GET /statement/:id/image ────────────────────────────────────────
+// ─── Route : GET /:shortid(\\d+)/image ───────────────────────────────────────
 
-router.get('/statement/:id/image', async (req, res) => {
+router.get('/:shortid(\\d+)/image', async (req, res) => {
+    const slug = await fetchSlugData(req.params.shortid);
+    if (!slug || slug.target_type !== 'statement') return res.status(404).json({ error: 'Not found' });
+    res.redirect(302, `/${slug.target_id}/image`);
+});
+
+// ─── Route : GET /:shortid(\\d+) (URL courte numérique) ──────────────────────
+
+router.get('/:shortid(\\d+)', async (req, res) => {
+    const { shortid } = req.params;
+    const slug = await fetchSlugData(shortid);
+    if (!slug) return res.sendFile(NODLANGUE_HTML);
+
+    if (slug.target_type === 'story') {
+        return res.redirect(301, `/stories/${slug.target_id}`);
+    }
+
+    if (slug.target_type === 'statement') {
+        const html = fs.readFileSync(NODLANGUE_HTML, 'utf8');
+        const data = await fetchStatementData(slug.target_id);
+        if (!data) return res.send(html);
+
+        const srcName  = data.sourceNode?.name || '';
+        const tgtName  = data.targetNode?.name || '';
+        const title    = [srcName, data.predLabel, tgtName].filter(Boolean).join(' · ') + ' — NØDLANGUE';
+        const desc     = data.description || `${srcName} ${data.predLabel} ${tgtName}`.trim();
+        const pageUrl  = `${req.protocol}://${req.get('host')}/${shortid}`;
+        const imageUrl = statementImageUrl(slug.target_id);
+
+        const injected = injectMeta(html, { title, description: desc, imageUrl, pageUrl });
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(injected);
+
+        imageExists(statementImagePath(slug.target_id)).then(exists => {
+            if (!exists) generateStatementPicture({
+                statementId: slug.target_id, sourceNode: data.sourceNode,
+                targetNode: data.targetNode, predLabel: data.predLabel,
+                description: data.description, publishedat: data.publishedat,
+            }).catch(e => console.warn('[og] bg generate error:', e.message));
+        });
+        return;
+    }
+
+    // node : sert juste la page
+    res.sendFile(NODLANGUE_HTML);
+});
+
+// ─── Route : GET /:id/image (image OG statement) ─────────────────────────────
+
+router.get('/:id/image', async (req, res) => {
     const { id } = req.params;
     const force  = req.query.force === '1';
 
-    // Si déjà en cache → redirect vers Supabase Storage
     if (!force && await imageExists(statementImagePath(id))) {
         return res.redirect(302, statementImageUrl(id));
     }
@@ -153,6 +243,43 @@ router.get('/statement/:id/image', async (req, res) => {
 
     if (!url) return res.status(500).json({ error: 'Génération image échouée' });
     res.redirect(302, url);
+});
+
+// ─── Route : GET /:id (statement UUID — catch-all, EN DERNIER) ───────────────
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+router.get('/:id', async (req, res) => {
+    const { id } = req.params;
+    if (!UUID_RE.test(id)) return res.sendFile(NODLANGUE_HTML);
+
+    const html = fs.readFileSync(NODLANGUE_HTML, 'utf8');
+    const data = await fetchStatementData(id);
+    if (!data) return res.send(html);
+
+    const srcName = data.sourceNode?.name || '';
+    const tgtName = data.targetNode?.name || '';
+    const title   = [srcName, data.predLabel, tgtName].filter(Boolean).join(' · ') + ' — NØDLANGUE';
+    const desc    = data.description || `${srcName} ${data.predLabel} ${tgtName}`.trim();
+    const pageUrl = `${req.protocol}://${req.get('host')}/${id}`;
+    const imageUrl = statementImageUrl(id);
+
+    const injected = injectMeta(html, { title, description: desc, imageUrl, pageUrl });
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(injected);
+
+    imageExists(statementImagePath(id)).then(exists => {
+        if (!exists) {
+            generateStatementPicture({
+                statementId:  id,
+                sourceNode:   data.sourceNode,
+                targetNode:   data.targetNode,
+                predLabel:    data.predLabel,
+                description:  data.description,
+                publishedat:  data.publishedat,
+            }).catch(e => console.warn('[og] generateStatementPicture error:', e.message));
+        }
+    });
 });
 
 module.exports = router;

@@ -239,14 +239,10 @@
       display: block;
     }
 
-    /* ── Sidebar masquée (toggle icône) ── */
-    body.sidebar-hidden nl-sidebar {
-      display: none !important;
-    }
-
-    body.sidebar-hidden .cn-cards-layout {
-      grid-template-columns: 1fr;
-    }
+    /* ── Sidebar masquée (toujours cachée dans nodlangue) ── */
+    nl-sidebar { display: none !important; }
+    #cnSidebarBtn { display: none !important; }
+    .cn-cards-layout { grid-template-columns: 1fr !important; }
 
     /* ── Search panel (dropdown depuis topbar) ── */
     .cn-search-panel {
@@ -283,6 +279,25 @@
       --nsb-rule: var(--cn-rule-soft, rgba(26, 24, 20, .14));
       --nsb-accent: var(--cn-accent, #c8302e);
     }
+
+    .cn-search-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10.5px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--cn-ink-3, #8a8478);
+      margin-bottom: 10px;
+    }
+    .cn-search-label svg {
+      width: 13px; height: 13px;
+      stroke: currentColor; fill: none; stroke-width: 1.5; flex-shrink: 0;
+    }
+    .cn-search-label[data-mode="folder"] .cn-search-icon { display: none; }
+    .cn-search-label[data-mode="folder"] .cn-folder-icon { display: block; }
+    .cn-folder-icon { display: none; }
 
     /* ── Document mode : pleine largeur, scrollbar au bord écran ── */
     body.doc-mode {
@@ -834,6 +849,11 @@
 
   <!-- ── Search panel (déclenché par icône loupe) ── -->
   <div id="cnSearchPanel" class="cn-search-panel">
+    <div id="cnSearchLabel" class="cn-search-label">
+      <svg class="cn-search-icon" viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4"/><line x1="9.5" y1="9.5" x2="14" y2="14"/></svg>
+      <svg class="cn-folder-icon" viewBox="0 0 16 16"><path d="M1.5 6V13H14V4H7L5.5 6H1.5z"/></svg>
+      <span class="cn-search-label-text">Recherche</span>
+    </div>
     <nl-searchbar id="mySearchbar" placeholder-filter="Filtrer nom, source, relation…"></nl-searchbar>
   </div>
 
@@ -1011,9 +1031,9 @@
       cnSearchBtn?.classList.remove('cn-active');
     }
 
-    cnGraphBtn?.addEventListener('click', () => { _closeSearch(); _setDocumentMode(false); _setGraphMode(true); });
-    cnPageBtn?.addEventListener('click', () => { _closeSearch(); _setFeedMode('statement'); });
-    cnStoriesBtn?.addEventListener('click', () => { _closeSearch(); _setFeedMode('story'); });
+    cnGraphBtn?.addEventListener('click', () => { _closeSearch(); _setDocumentMode(false); _setGraphMode(true); history.pushState({ graphMode: true }, '', _buildPath('/explore')); });
+    cnPageBtn?.addEventListener('click', () => { _closeSearch(); _setFeedMode('statement'); history.pushState(null, '', '/'); });
+    cnStoriesBtn?.addEventListener('click', () => { _closeSearch(); _setFeedMode('story'); history.pushState({ storiesTab: true }, '', '/stories'); });
 
     // ── Document mode ─────────────────────────────────────────────────────────
     let _docMode = false;
@@ -1397,7 +1417,10 @@
       if (_currentStoryId) { NodelManager.unloadStoryData?.(_currentStoryId); _currentStoryId = null; }
     }
 
-    cnStoryClose?.addEventListener('click', _closeStory);
+    cnStoryClose?.addEventListener('click', () => {
+      if (history.state?.storyId) history.pushState({ storiesTab: true }, '', '/stories');
+      _closeStory();
+    });
 
     document.addEventListener('cn-story-open', (e) => {
       const { id, name } = e.detail || {};
@@ -1630,36 +1653,347 @@
           if (sb) sb.setAttribute('scope-mode', 'either');
           NodelManager.setFeedScope('either');
         }
+        if (action === 'setPrimaryNode' || action === 'setSecondaryNode' ||
+            action === 'swapPrimaryAnSecondaryNodes') {
+          _syncUrl();
+        }
+        if (action === 'loadNodes') {
+          const ids = (NodelManager.nodes || []).map(n => n.id).filter(id => !_slugCache[id]);
+          if (ids.length) NodelManager.getSlugIds(ids, _cacheSlugRows);
+        }
       });
 
       NodelManager.onFeedEvents.push((action) => {
         if (action === 'setFeedMode') _syncModeIcons();
+        if (action === 'setFeedScope') _syncUrl();
         if (_graphMode && (action === 'loadFeedStatements' || action === 'loadFeedStories')) {
           _updateGraph();
         }
       });
 
-      // ── Deep link : déclencher immédiatement, avant le premier chargement ──
-      const _initDeepLinkId = _deepLinkId();
-      if (_initDeepLinkId) {
-        NodelManager._pendingDeepLink = true; // bloque nl-cards._switchTab
-        _openStatementDeepLink(_initDeepLinkId);
+      // Peuple le cache slug après chargement des dossiers
+      NodelManager.onFolderEvents.push((action) => {
+        if (action === 'loadFolders') {
+          const ids = (NodelManager.folders || []).map(f => f.id).filter(id => !_slugCache[id]);
+          if (ids.length) NodelManager.getSlugIds(ids, _cacheSlugRows);
+        }
+      });
+
+      // ── Deep link / URL routing ──────────────────────────────────────────────
+      const _initStoryId = _storyDeepLinkId();
+      if (_initStoryId) {
+        _openStoryDeepLink(_initStoryId);
+      } else if (location.pathname === '/stories') {
+        history.replaceState({ storiesTab: true }, '', '/stories');
+        NodelManager.setFeedMode('story');
+        _urlSyncReady = true;
+      } else {
+        _parseAndRestoreUrl();
       }
     });
 
-    // ── URL state : statement/:id ─────────────────────────────────────────────
-    function _deepLinkId() {
-      const m = location.pathname.match(/^\/statement\/([^/]+)$/);
+    // ── URL params helpers ────────────────────────────────────────────────────
+
+    let _urlSyncReady = false; // activé après restauration initiale des params
+
+    // Cache UUID → slug numérique (bigint as string)
+    const _slugCache = {};
+    function _getSlug(uuid) { return _slugCache[uuid] || uuid; }
+    function _cacheSlugRows(rows) {
+      (rows || []).forEach(r => { if (r.target_id && r.id) _slugCache[r.target_id] = String(r.id); });
+    }
+
+    function _buildPath(explorePrefix) {
+      const isExplore = explorePrefix === '/explore';
+      const primary   = NodelManager.getPrimaryNode?.();
+      const secondary = NodelManager.getSecondaryNode?.();
+      const p = primary   ? _getSlug(primary.id)   : null;
+      const s = secondary ? _getSlug(secondary.id) : null;
+      if (p || s) {
+        const base = explorePrefix || '/search';
+        if (p && s) {
+          const pn = parseInt(p), sn = parseInt(s);
+          const scope = NodelManager._feedScope;
+          if (!isNaN(pn) && !isNaN(sn)) {
+            return scope === 'both'
+              ? `${base}/${Math.min(pn, sn)}-${Math.max(pn, sn)}`
+              : `${base}/${Math.max(pn, sn)}-${Math.min(pn, sn)}`;
+          }
+          return `${base}/${p}-${s}`;
+        }
+        return `${base}/${p || s}`;
+      }
+      return isExplore ? '/explore' : '/';
+    }
+
+    function _syncUrl() {
+      if (!_urlSyncReady) return;
+      if (_storyMode) return;
+      const path = _buildPath(_graphMode ? '/explore' : '/search');
+      if (_graphMode) {
+        history.replaceState({ graphMode: true }, '', path);
+      } else {
+        history.replaceState(null, '', path);
+      }
+    }
+
+    // popstate : story, graphe et statement
+    window.addEventListener('popstate', (e) => {
+      if (e.state?.graphMode) {
+        if (!_graphMode) _setGraphMode(true);
+      } else if (e.state?.storyId) {
+        if (_graphMode) _setGraphMode(false);
+        _openStory(e.state.storyId, '');
+      } else if (e.state?.storiesTab) {
+        if (_graphMode) _setGraphMode(false);
+        if (_storyMode) _closeStory();
+        NodelManager.setFeedMode('story');
+      } else {
+        if (_graphMode) _setGraphMode(false);
+        if (_storyMode) _closeStory();
+        const modal = document.getElementById('cn-comment-modal');
+        if (!e.state?.statementId && modal?.classList.contains('is-open')) modal.classList.remove('is-open');
+      }
+    });
+
+    // ── URL routing unifié ────────────────────────────────────────────────────
+    const _UUID_RE  = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const _SHORT_RE = /^\d+$/;
+
+    function _parseAndRestoreUrl() {
+      const path = location.pathname;
+
+      // Explore mode : /explore[/...]
+      if (path === '/explore' || path.startsWith('/explore/')) {
+        _setGraphMode(true);
+        _restorePathNodes(path.startsWith('/explore/') ? path.slice('/explore'.length) : '/');
+        return;
+      }
+
+      // Search mode : /search[/...]
+      if (path === '/search' || path.startsWith('/search/')) {
+        _restorePathNodes(path.startsWith('/search/') ? path.slice('/search'.length) : '/');
+        return;
+      }
+
+      // Legacy query-string (ancien format ?primary=&secondary=&folder=)
+      const qs = new URLSearchParams(location.search);
+      if (qs.has('primary') || qs.has('secondary') || qs.has('folder')) {
+        _restoreQueryString(qs);
+        return;
+      }
+
+      _restorePathNodes(path);
+    }
+
+    function _restorePathNodes(path) {
+      // /folders/:slug ou /folder/:slug
+      const folderM = path.match(/^\/folders?\/(\w+)$/);
+      if (folderM) { _restoreFolderAndOpenPanel(folderM[1]); return; }
+
+      // /:slug1-:slug2 — deux nodes, scope déduit de l'ordre numérique
+      const twoM = path.match(/^\/(\d+)-(\d+)$/);
+      if (twoM) {
+        const a = twoM[1], b = twoM[2];
+        const scope = parseInt(a) < parseInt(b) ? 'both' : 'either';
+        _restoreNodeSlugs(a, b, scope);
+        return;
+      }
+
+      // /:slug — UUID ou slug numérique ou statement legacy
+      const legacyStmtM = path.match(/^\/statements?\/([^/]+)$/);
+      const singleM = legacyStmtM || path.match(/^\/(\w+)$/);
+      if (singleM) {
+        const slug = singleM[1];
+        if (_UUID_RE.test(slug)) {
+          NodelManager._pendingDeepLink = true;
+          _openStatementDeepLink({ id: slug, short: false });
+          return;
+        }
+        if (_SHORT_RE.test(slug)) {
+          NodelManager._pendingDeepLink = true;
+          _resolveSlugAndDispatch(slug);
+          return;
+        }
+      }
+
+      // Aucun param — feed normal
+      _urlSyncReady = true;
+    }
+
+    function _restoreQueryString(p) {
+      const folderParam    = p.get('folder');
+      const primaryParam   = p.get('primary');
+      const secondaryParam = p.get('secondary');
+      const scopeParam     = p.get('scope');
+      if (folderParam) {
+        _restoreFolderAndOpenPanel(folderParam);
+      } else {
+        _restoreNodeSlugs(primaryParam, secondaryParam, scopeParam);
+      }
+    }
+
+    function _resolveSlugAndDispatch(slug) {
+      NodelSb._supabase.from('slugs').select('target_id,target_type').eq('id', slug).limit(1)
+        .then(({ data }) => {
+          const row = data?.[0];
+          if (!row) { NodelManager._pendingDeepLink = false; _urlSyncReady = true; return; }
+          _slugCache[row.target_id] = String(slug);
+          if (row.target_type === 'statement') {
+            _openStatementDeepLink({ id: row.target_id, short: false });
+          } else if (row.target_type === 'story') {
+            NodelManager._pendingDeepLink = false;
+            _openStoryDeepLink(row.target_id);
+          } else if (row.target_type === 'node') {
+            NodelManager._pendingDeepLink = false;
+            _applySingleNode(row.target_id);
+          } else {
+            NodelManager._pendingDeepLink = false;
+            _urlSyncReady = true;
+          }
+        })
+        .catch(() => { NodelManager._pendingDeepLink = false; _urlSyncReady = true; });
+    }
+
+    function _applySingleNode(nodeId) {
+      const trySet = () => {
+        const n = (NodelManager.nodes || []).find(n => n.id === nodeId);
+        if (n) NodelManager.setPrimaryNode(n.id);
+        _urlSyncReady = true;
+      };
+      if ((NodelManager.nodes || []).length > 0) { trySet(); }
+      else {
+        const h = (action) => {
+          if (action !== 'loadNodes') return;
+          NodelManager.onNodeEvents.splice(NodelManager.onNodeEvents.indexOf(h), 1);
+          trySet();
+        };
+        NodelManager.onNodeEvents.push(h);
+      }
+    }
+
+    function _restoreFolderAndOpenPanel(slug) {
+      const openPanel = (uuid) => {
+        const tryOpen = () => {
+          const found = (NodelManager.folders || []).find(f => f.id === uuid);
+          if (found) {
+            _openFolderPanel();
+            _renderFolderStatements(found);
+          }
+          _urlSyncReady = true;
+        };
+        if (NodelManager.folders?.length) { tryOpen(); }
+        else {
+          const h = (action) => {
+            if (action !== 'loadFolders') return;
+            NodelManager.onFolderEvents.splice(NodelManager.onFolderEvents.indexOf(h), 1);
+            tryOpen();
+          };
+          NodelManager.onFolderEvents.push(h);
+        }
+      };
+      if (_UUID_RE.test(slug)) { openPanel(slug); return; }
+      if (_SHORT_RE.test(slug)) {
+        NodelSb._supabase.from('slugs').select('target_id').eq('id', slug).limit(1)
+          .then(({ data }) => {
+            if (data?.[0]) { _slugCache[data[0].target_id] = String(slug); openPanel(data[0].target_id); }
+            else _urlSyncReady = true;
+          })
+          .catch(() => { _urlSyncReady = true; });
+        return;
+      }
+      _urlSyncReady = true;
+    }
+
+    function _restoreNodeSlugs(slug1, slug2, scope) {
+      if (!slug1 && !slug2) { _urlSyncReady = true; return; }
+      const numericIds = [slug1, slug2].filter(s => s && _SHORT_RE.test(s)).map(Number);
+      const _apply = (resolvedMap) => {
+        const resolve = (s) => (s && _SHORT_RE.test(s)) ? (resolvedMap[s] || s) : s;
+        const primaryId   = resolve(slug1);
+        const secondaryId = resolve(slug2);
+        const trySet = () => {
+          const nodes = NodelManager.nodes || [];
+          if (primaryId)   { const n = nodes.find(n => n.id === primaryId);   if (n) NodelManager.setPrimaryNode(n.id); }
+          if (secondaryId) { const n = nodes.find(n => n.id === secondaryId); if (n) NodelManager.setSecondaryNode(n.id); }
+          if (scope && scope !== 'all') {
+            const sb = document.getElementById('mySearchbar');
+            if (sb) sb.setAttribute('scope-mode', scope);
+            NodelManager.setFeedScope(scope);
+          } else if (primaryId && secondaryId) {
+            const sb = document.getElementById('mySearchbar');
+            if (sb) sb.setAttribute('scope-mode', 'both');
+            NodelManager.setFeedScope('both');
+          }
+          _urlSyncReady = true;
+        };
+        if ((NodelManager.nodes || []).length > 0) { trySet(); }
+        else {
+          const h = (action) => {
+            if (action !== 'loadNodes') return;
+            NodelManager.onNodeEvents.splice(NodelManager.onNodeEvents.indexOf(h), 1);
+            trySet();
+          };
+          NodelManager.onNodeEvents.push(h);
+        }
+      };
+      if (numericIds.length) {
+        NodelManager.resolveSlugs(numericIds, (rows) => {
+          const map = {};
+          (rows || []).forEach(r => {
+            const numStr = String(r.id);
+            map[numStr] = r.target_id;
+            _slugCache[r.target_id] = numStr;
+          });
+          _apply(map);
+        });
+      } else {
+        _apply({});
+      }
+    }
+
+    // ── URL state : story/:id ─────────────────────────────────────────────────
+    function _storyDeepLinkId() {
+      const m = location.pathname.match(/^\/stories\/([^/]+)$/);
       if (m) return m[1];
       const p = new URLSearchParams(location.search);
-      if (p.get('type') === 'statement' && p.get('id')) return p.get('id');
+      if (p.get('type') === 'story' && p.get('id')) return p.get('id');
       return null;
+    }
+
+    function _openStoryDeepLink(storyId) {
+      if (typeof NodelSb === 'undefined') return;
+      NodelSb._supabase
+        .from('story_covers')
+        .select('id,name,description,picture,publishedat,nodeids,statementids')
+        .eq('id', storyId)
+        .limit(1)
+        .then(({ data }) => {
+          const cover = data?.[0];
+          if (!cover) return;
+          if (!NodelManager.stories.find(s => s.id === cover.id)) NodelManager.stories.push(cover);
+          _openStory(cover.id, cover.name);
+        });
     }
 
     let _deepLinkDone = false;
 
-    function _openStatementDeepLink(id) {
+    function _openStatementDeepLink(link) {
       if (typeof NodelSb === 'undefined') return;
+      if (link.short) {
+        NodelSb._supabase.from('slugs').select('target_id,target_type').eq('id', link.id).limit(1)
+          .then(({ data }) => {
+            const row = data?.[0];
+            if (row?.target_type === 'statement') {
+              _openStatementDeepLink({ id: row.target_id, short: false });
+            } else {
+              NodelManager._pendingDeepLink = false;
+            }
+          })
+          .catch(() => { NodelManager._pendingDeepLink = false; });
+        return;
+      }
+      const id = link.id;
 
       NodelSb.loadStatementsByIds([id], (stmts) => {
         if (_deepLinkDone) return;
@@ -1672,7 +2006,6 @@
         const _activate = () => {
           const _openModal = () => NodelManager.openStatementModal(stmt);
 
-          // Écouter loadFeedStatements (pas loadItemsFromNodesSummary)
           const _handler = (action) => {
             if (action !== 'loadFeedStatements') return;
             const idx = NodelManager.onFeedEvents.indexOf(_handler);
@@ -1685,16 +2018,12 @@
             if (idx > -1) { NodelManager.onFeedEvents.splice(idx, 1); _openModal(); }
           }, 3000);
 
-          // setPrimaryNode/setSecondaryNode (met à jour la searchbar) — nl-cards
-          // est encore bloqué par _pendingDeepLink, donc pas de requête prématurée
           if (sourcenodeid) NodelManager.setPrimaryNode(sourcenodeid);
           if (targetnodeid) NodelManager.setSecondaryNode(targetnodeid);
 
-          // Corriger le bouton scope (auto-scope a pu le passer à 'either')
           const sb = document.getElementById('mySearchbar');
           if (sb) { sb._scopeMode = 'both'; sb._renderScopeBtn(); }
 
-          // Débloquer nl-cards et déclencher UNE SEULE requête avec les deux nodes
           NodelManager._pendingDeepLink = false;
           NodelManager.setFeedScope('both');
         };
@@ -1710,24 +2039,17 @@
       });
     }
 
-    // Ouvre modale → push /statement/:id
+    // Ouvre modale → push /:slug_id (numérique) ou /:uuid (fallback)
     document.addEventListener('cn-statement-modal-open', (e) => {
-      const id = e.detail?.id;
-      if (id) history.pushState({ statementId: id }, '', `/statement/${id}`);
+      const id     = e.detail?.id;
+      const slugId = e.detail?.slug_id;
+      if (id) history.pushState({ statementId: id }, '', '/' + (slugId || id));
     });
 
-    // Ferme modale → restaure / + reset currentStatementId pour permettre réouverture
+    // Ferme modale → restaure / + reset currentStatementId
     document.addEventListener('cn-statement-modal-close', () => {
       if (history.state?.statementId) history.pushState(null, '', '/');
       NodelManager._currentStatementId = null;
-    });
-
-    // Bouton retour navigateur
-    window.addEventListener('popstate', (e) => {
-      if (!e.state?.statementId) {
-        const modal = document.getElementById('cn-comment-modal');
-        if (modal?.classList.contains('is-open')) modal.classList.remove('is-open');
-      }
     });
 
     // ── Edge modal (clic sur arête ZC ou D3) ────────────────────────────────
