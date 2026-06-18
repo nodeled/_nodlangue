@@ -205,6 +205,15 @@
       background: rgba(255, 255, 255, .15);
       border-color: rgba(255, 255, 255, .4);
     }
+    .cn-icon-btn:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .cn-story-name {
+      font-family: "Bangers", sans-serif !important;
+      letter-spacing: .06em;
+    }
 
     /* ── Graph mode : pleine largeur, pas de sidebar ── */
     body.graph-mode {
@@ -997,6 +1006,7 @@
       const mode = NodelManager._feedMode || 'statement';
       cnPageBtn?.classList.toggle('cn-active', mode === 'statement' && !_graphMode);
       cnStoriesBtn?.classList.toggle('cn-active', mode === 'story' && !_graphMode);
+      if (cnSearchBtn) cnSearchBtn.disabled = mode === 'story';
     }
 
     function _setFeedMode(mode) {

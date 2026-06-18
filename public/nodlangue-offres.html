@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="/js/components/nodlangue-header.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -30,47 +31,6 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
 }
-
-/* ── HEADER ───────────────────────────────────────────────── */
-.nl-bar {
-  position: sticky;
-  top: 0;
-  left: 0; right: 0;
-  z-index: 100;
-  background: var(--black);
-  border-bottom: 2px solid var(--red);
-  height: 60px;
-  padding: 0 28px;
-  display: flex;
-  align-items: center;
-}
-
-.nl-brand {
-  font-family: 'Bangers', sans-serif;
-  font-size: 28px;
-  font-weight: 400;
-  letter-spacing: .08em;
-  color: #f5f2ea;
-  line-height: 1;
-  text-shadow: 1px 1px 0 rgba(200,48,46,.4);
-  text-decoration: none;
-}
-a.nl-brand:hover { opacity: .8; }
-
-.nl-back {
-  margin-left: auto;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
-  text-transform: uppercase;
-  letter-spacing: .12em;
-  color: var(--red);
-  text-decoration: none;
-  border: 1px solid var(--red);
-  padding: 6px 14px;
-  white-space: nowrap;
-  transition: background .15s, color .15s;
-}
-.nl-back:hover { background: var(--red); color: #f5f2ea; }
 
 /* ── HERO ──────────────────────────────────────────────────── */
 .hero {
@@ -741,11 +701,7 @@ footer {
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="nl-bar">
-  <a class="nl-brand" href="/">NØDLANGUE</a>
-  <a class="nl-back" href="/">← Retour</a>
-</header>
+<nodlangue-header context="offers"></nodlangue-header>
 
 <!-- HERO -->
 <div class="hero">
