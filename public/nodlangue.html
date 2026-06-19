@@ -202,8 +202,8 @@
     }
 
     .cn-icon-btn.cn-active {
-      background: rgba(255, 255, 255, .15);
-      border-color: rgba(255, 255, 255, .4);
+      background: rgba(200, 48, 46, .18);
+      border-color: rgba(200, 48, 46, .5);
     }
     .cn-icon-btn:disabled {
       opacity: 0.25;
@@ -1042,7 +1042,7 @@
     }
 
     cnGraphBtn?.addEventListener('click', () => { _closeSearch(); _setDocumentMode(false); if (_storyMode) _closeStory(); _setGraphMode(true); history.pushState({ graphMode: true }, '', _buildPath('/explore')); });
-    cnPageBtn?.addEventListener('click', () => { _closeSearch(); _setFeedMode('statement'); history.pushState(null, '', '/'); });
+    cnPageBtn?.addEventListener('click', () => { _closeSearch(); _setFeedMode('statement'); history.pushState(null, '', _buildPath('/search')); });
     cnStoriesBtn?.addEventListener('click', () => { _closeSearch(); _setFeedMode('story'); history.pushState({ storiesTab: true }, '', '/stories'); });
 
     // ── Document mode ─────────────────────────────────────────────────────────

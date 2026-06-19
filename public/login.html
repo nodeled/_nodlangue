@@ -8,8 +8,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;600;700&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
     rel="stylesheet">
+  <script src="/js/components/nodlangue-header.js"></script>
 
   <style>
     :root {
@@ -20,7 +21,7 @@
       --patreon: #f96854;
       --green: #16a34a;
       --red: #dc2626;
-      --header-height: 56px;
+      --header-height: 60px;
     }
 
     *,
@@ -36,33 +37,6 @@
       color: var(--ink);
       font-family: "Inter", system-ui, sans-serif;
       font-size: 15px;
-    }
-
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: var(--header-height);
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
-      background: var(--bg);
-      border-bottom: 1px solid var(--rule);
-      z-index: 100;
-    }
-
-    .logo {
-      font-family: "Bangers", Impact, sans-serif;
-      font-size: 24px;
-      letter-spacing: .06em;
-      color: var(--ink);
-      text-decoration: none;
-    }
-
-    .logo em {
-      color: var(--patreon);
-      font-style: normal;
     }
 
     main {
@@ -160,9 +134,7 @@
 
 <body>
 
-  <header>
-    <a class="logo" href="/">NØDLANGUE</a>
-  </header>
+  <nodlangue-header context="login"></nodlangue-header>
 
   <main>
     <h1>Connexion Patreon</h1>

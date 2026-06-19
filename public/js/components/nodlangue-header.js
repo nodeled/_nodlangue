@@ -83,7 +83,8 @@
     }
     .nlh-nav-btn:hover { background: rgba(255,255,255,.08); }
     .nlh-nav-btn svg { width: 16px; height: 16px; }
-    .nlh-nav-btn.active {
+    .nlh-nav-btn.active,
+    .nlh-nav-btn.cn-active {
       background: rgba(200,48,46,.18);
       border-color: rgba(200,48,46,.5);
     }
@@ -130,7 +131,7 @@
       <path d="M13 9.5A5.5 5.5 0 0 1 6.5 3a5.5 5.5 0 1 0 6.5 6.5z"/></svg>`,
   };
 
-  const ACTIVE = { statements: 'cnPageBtn', stories: 'cnStoriesBtn', offers: 'cnOffersBtn' };
+  const ACTIVE = { statements: 'cnPageBtn', stories: 'cnStoriesBtn', offers: 'cnOffersBtn', login: 'cnProfileBtn' };
 
   class NodlangueHeader extends HTMLElement {
     static get observedAttributes() { return ['context']; }
@@ -166,16 +167,17 @@
       let right = '';
       if (ctx === 'pricing') {
         right = `<span class="nlh-tag">Dossier investisseur — Modèle économique</span>`;
-      } else if (['statements', 'stories', 'offers'].includes(ctx)) {
+      } else if (['statements', 'stories', 'offers', 'login'].includes(ctx)) {
         const active = ACTIVE[ctx] || '';
+        const isLink = isOffers || ctx === 'login';
         right = `<nav class="nlh-nav">
-          ${isOffers ? navLink('cnGraphBtn',   'Graphe',           SVG.graph,      '/')        : navBtn('cnGraphBtn',   'Graphe',           SVG.graph,      active === 'cnGraphBtn')}
-          ${isOffers ? navLink('cnPageBtn',    'Statements',       SVG.statements, '/')        : navBtn('cnPageBtn',    'Statements',       SVG.statements, active === 'cnPageBtn')}
-          ${isOffers ? navLink('cnStoriesBtn', 'Stories',          SVG.stories,    '/stories') : navBtn('cnStoriesBtn', 'Stories',          SVG.stories,    active === 'cnStoriesBtn')}
-          ${navBtn('cnSearchBtn', 'Recherche', SVG.search, active === 'cnSearchBtn', isOffers || ctx === 'stories')}
+          ${isLink ? navLink('cnGraphBtn',   'Graphe',           SVG.graph,      '/')        : navBtn('cnGraphBtn',   'Graphe',           SVG.graph,      false)}
+          ${isLink ? navLink('cnPageBtn',    'Statements',       SVG.statements, '/')        : navBtn('cnPageBtn',    'Statements',       SVG.statements, false)}
+          ${isLink ? navLink('cnStoriesBtn', 'Stories',          SVG.stories,    '/stories') : navBtn('cnStoriesBtn', 'Stories',          SVG.stories,    false)}
+          ${navBtn('cnSearchBtn', 'Recherche', SVG.search, false, isLink || ctx === 'stories')}
           ${navLink('cnOffersBtn', 'Rejoindre', SVG.offers, '/nodlangue-offres.html', active === 'cnOffersBtn')}
-          ${isOffers ? navLink('cnProfileBtn', 'Profil / Patreon', SVG.profile,    '/') : navBtn('cnProfileBtn', 'Profil / Patreon', SVG.profile, active === 'cnProfileBtn')}
-          ${navBtn('cnThemeBtn', 'Thème', SVG.theme, false, isOffers)}
+          ${isLink ? navLink('cnProfileBtn', 'Profil / Patreon', SVG.profile,    '/login.html', active === 'cnProfileBtn') : navBtn('cnProfileBtn', 'Profil / Patreon', SVG.profile, false)}
+          ${navBtn('cnThemeBtn', 'Thème', SVG.theme, false, isLink)}
         </nav>`;
       }
 
