@@ -183,23 +183,44 @@
       height: 16px;
     }
 
-    /* ── Feed area ── */
-    .cn-cards-layout {
-      overflow-x: hidden;
+    /* ── Main split (graph gauche / feed droit) ── */
+    #cnMainSplit {
+      position: fixed;
+      top: 106px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+    }
+
+    #cnGraphArea {
+      height: 100%;
+      position: relative;
+    }
+
+    #cnGraphArea nl-graph {
+      display: block;
+      width: 100%;
+      height: 100%;
     }
 
     #cnFeedArea {
+      height: 100%;
+      overflow-y: auto;
       min-width: 0;
-      overflow: hidden;
+      container-type: inline-size;
     }
 
-    #cnGraph {
-      display: none;
-      width: 100%;
-      max-width: 100%;
-      overflow: hidden;
-      box-sizing: border-box;
+    /* ── Feed → masonry CSS column-count ── */
+    body .cn-feed {
+      display: block;
+      column-count: 4;
+      column-gap: var(--cn-col-gap, 18px);
     }
+    body .cn-col { display: contents; }
+    @container (max-width: 1200px) { body .cn-feed { column-count: 3; } }
+    @container (max-width: 860px)  { body .cn-feed { column-count: 2; } }
+    @container (max-width: 560px)  { body .cn-feed { column-count: 1; } }
 
     .cn-icon-btn.cn-active {
       background: rgba(200, 48, 46, .18);
@@ -215,32 +236,8 @@
       letter-spacing: .06em;
     }
 
-    /* ── Graph mode : pleine largeur, pas de sidebar ── */
-    body.graph-mode {
-      overflow: hidden;
-    }
-
-    body.graph-mode .cn-cards-layout {
-      display: block;
-      padding: 0;
-      gap: 0;
-    }
-
-    body.graph-mode nl-sidebar {
-      display: none !important;
-    }
-
-    body.graph-mode #myCards {
-      display: none;
-    }
-
-    body.graph-mode #cnGraph {
-      display: block;
-    }
-
     /* ── Éléments masqués dans nodlangue ── */
     nl-sidebar { display: none !important; }
-    .cn-cards-layout { grid-template-columns: 1fr !important; }
 
     /* ── Sub-barre fixe (toujours visible sous le header) ── */
     .cn-search-panel {
@@ -843,15 +840,17 @@
   </div>
 
   <!-- ── Feed + sidebar ── -->
-  <div class="cn-cards-layout">
-    <div id="cnFeedArea">
-      <nl-cards id="myCards" mode="statement" item-width="300"></nl-cards>
+  <nl-split id="cnMainSplit" direction="horizontal" value="0" divider-size="6">
+    <div slot="start" id="cnGraphArea">
       <nl-graph id="cnGraph" data-source="alledges" legend-attribute="count" style-id="nodlangue" layout-mode="dynamic"
         scroll-to-flow="false" click-node-mode="current" node-spacing="300" panning="true" provider="zc"
         show-documents="false"></nl-graph>
     </div>
-    <nl-sidebar id="mySidebar"></nl-sidebar>
-  </div>
+    <div slot="end" id="cnFeedArea">
+      <nl-cards id="myCards" mode="statement" item-width="300"></nl-cards>
+      <nl-sidebar id="mySidebar"></nl-sidebar>
+    </div>
+  </nl-split>
 
   <!-- ── Document panel ── -->
   <div id="cnDocPanel">
@@ -919,6 +918,7 @@
   <script>document.write('<script src="' + (location.hostname === 'localhost' ? 'http://localhost:3000/js/tools/nl.js' : 'https://nodlangue.com/dist/nl.min.js') + '"><\/script>')</script>
   <script>
     const myCards = document.getElementById('myCards');
+    const cnMainSplit = document.getElementById('cnMainSplit');
     const cnThemeBtn = document.getElementById('cnThemeBtn');
     const cnProfileBtn = document.getElementById('cnProfileBtn');
     const cnGraphBtn = document.getElementById('cnGraphBtn');
@@ -1020,20 +1020,13 @@
     function _setGraphMode(on) {
       if (on && typeof _closeFolderPanel === 'function') _closeFolderPanel();
       _graphMode = on;
-      document.body.classList.toggle('graph-mode', on);
+      cnMainSplit?.setAttribute('value', on ? '0.4' : '0');
       cnGraphBtn?.classList.toggle('cn-active', on);
       if (!on) _syncModeIcons();
       else { cnPageBtn?.classList.remove('cn-active'); cnStoriesBtn?.classList.remove('cn-active'); }
-      if (on) {
-        requestAnimationFrame(() => {
-          const graphTop = cnGraph.getBoundingClientRect().top;
-          cnGraph.style.height = Math.max(200, window.innerHeight - graphTop) + 'px';
-          _updateGraph();
-        });
-      } else {
-        if (cnGraph) cnGraph.style.height = '';
-        requestAnimationFrame(() => myCards?._renderFeed?.());
-      }
+      requestAnimationFrame(() => {
+        if (on) _updateGraph();
+      });
     }
 
     function _closeSearch() {
