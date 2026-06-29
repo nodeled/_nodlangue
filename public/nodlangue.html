@@ -919,6 +919,12 @@
   <script>
     const myCards = document.getElementById('myCards');
     const cnMainSplit = document.getElementById('cnMainSplit');
+    function _applyResponsiveDirection() {
+      if (!cnMainSplit) return;
+      cnMainSplit.setAttribute('direction', window.innerWidth <= 768 ? 'vertical' : 'horizontal');
+    }
+    _applyResponsiveDirection();
+    window.addEventListener('resize', _applyResponsiveDirection);
     const cnThemeBtn = document.getElementById('cnThemeBtn');
     const cnProfileBtn = document.getElementById('cnProfileBtn');
     const cnGraphBtn = document.getElementById('cnGraphBtn');
@@ -1017,10 +1023,24 @@
       _syncModeIcons();
     }
 
+    const _loadSplit = new URLSearchParams(location.search).get('split');
+    function _getSplitValue() {
+      const cur = new URLSearchParams(location.search).get('split');
+      const raw = cur || _loadSplit;
+      const v = parseInt(raw, 10);
+      return (v > 0 && v <= 100) ? (v / 100).toFixed(2) : '0.40';
+    }
+
+    let _splitUrlTimer;
+    cnMainSplit?.addEventListener('nl-split-change', () => {
+      clearTimeout(_splitUrlTimer);
+      _splitUrlTimer = setTimeout(_syncUrl, 400);
+    });
+
     function _setGraphMode(on) {
       if (on && typeof _closeFolderPanel === 'function') _closeFolderPanel();
       _graphMode = on;
-      cnMainSplit?.setAttribute('value', on ? '0.4' : '0');
+      cnMainSplit?.setAttribute('value', on ? _getSplitValue() : '0');
       cnGraphBtn?.classList.toggle('cn-active', on);
       if (!on) _syncModeIcons();
       else { cnPageBtn?.classList.remove('cn-active'); cnStoriesBtn?.classList.remove('cn-active'); }
@@ -1034,7 +1054,13 @@
       cnSearchBtn?.classList.remove('cn-active');
     }
 
-    cnGraphBtn?.addEventListener('click', () => { _closeSearch(); _setDocumentMode(false); if (_storyMode) _closeStory(); _setGraphMode(true); history.pushState({ graphMode: true }, '', _buildPath('/explore')); });
+    cnGraphBtn?.addEventListener('click', () => {
+      _closeSearch(); _setDocumentMode(false); if (_storyMode) _closeStory(); _setGraphMode(true);
+      const sv = cnMainSplit ? Math.round(cnMainSplit.value * 100) : 40;
+      const prefix = location.pathname.startsWith('/explore') ? '/explore' : '/search';
+      const basePath = _buildPath(prefix);
+      history.pushState({ graphMode: true }, '', sv > 0 ? `${basePath}?split=${sv}` : basePath);
+    });
     cnPageBtn?.addEventListener('click', () => { _closeSearch(); _setFeedMode('statement'); history.pushState(null, '', _buildPath('/search')); });
     cnStoriesBtn?.addEventListener('click', () => { _closeSearch(); _setFeedMode('story'); history.pushState({ storiesTab: true }, '', '/stories'); });
 
@@ -1733,9 +1759,12 @@
     function _syncUrl() {
       if (!_urlSyncReady) return;
       if (_storyMode) return;
-      const path = _buildPath(_graphMode ? '/explore' : '/search');
+      const prefix = location.pathname.startsWith('/explore') ? '/explore' : '/search';
+      const path = _buildPath(prefix);
       if (_graphMode) {
-        history.replaceState({ graphMode: true }, '', path);
+        const sv = cnMainSplit ? Math.round(cnMainSplit.value * 100) : 40;
+        const url = sv > 0 ? `${path}?split=${sv}` : path;
+        history.replaceState({ graphMode: true }, '', url);
       } else {
         history.replaceState(null, '', path);
       }
@@ -1774,8 +1803,10 @@
         return;
       }
 
-      // Search mode : /search[/...]
+      // Search mode : /search[/...] — si ?split=N, ouvrir le graphe comme /explore
       if (path === '/search' || path.startsWith('/search/')) {
+        const sv = parseInt(new URLSearchParams(location.search).get('split'), 10);
+        if (sv > 0) _setGraphMode(true);
         _restorePathNodes(path.startsWith('/search/') ? path.slice('/search'.length) : '/');
         return;
       }
